@@ -1,7 +1,7 @@
-rust-rocksdb
+exonum_rocksdb
 ============
-[![Build Status](https://travis-ci.org/spacejam/rust-rocksdb.svg?branch=master)](https://travis-ci.org/spacejam/rust-rocksdb)
-[![crates.io](http://meritbadge.herokuapp.com/rocksdb)](https://crates.io/crates/rocksdb)
+[![Build Status](https://travis-ci.org/exonum/exonum_rocksdb.svg?branch=master)](https://travis-ci.org/exonum/exonum_rocksdb)
+[![crates.io](http://meritbadge.herokuapp.com/rocksdb)](https://crates.io/crates/exonum_rocksdb)
 
 [documentation](https://docs.rs/rocksdb/0.6.0/rocksdb/)
 
