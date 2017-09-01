@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-//! Rust wrapper for RocksDB.
+//! Rust wrapper for `RocksDB`.
 //!
 //! # Examples
 //!
@@ -52,23 +52,25 @@ pub mod compaction_filter;
 mod db;
 mod db_options;
 pub mod transaction_db;
+pub mod optimistic_txn_db;
+pub mod transaction;
 
 pub use compaction_filter::Decision as CompactionDecision;
 pub use db::{DBCompactionStyle, DBCompressionType, DBIterator, DBRawIterator, DBRecoveryMode,
              DBVector, ReadOptions, Direction, IteratorMode, Snapshot, WriteBatch,
              new_bloom_filter};
-pub use transaction_db::{TransactionDB, TransactionDBOptions};
-pub use transaction_db::transaction::{Transaction, TransactionOptions};
 pub use merge_operator::MergeOperands;
 
 use std::collections::BTreeMap;
 use std::error;
 use std::fmt;
 use std::path::PathBuf;
+pub use transaction::{Transaction, TransactionOptions};
+pub use transaction_db::{TransactionDB, TransactionDBOptions};
 
 
 
-/// A RocksDB database.
+/// A `RocksDB` database.
 ///
 /// See crate level documentation for a simple usage example.
 pub struct DB {
@@ -89,8 +91,8 @@ impl Error {
         Error { message: message }
     }
 
-    pub fn to_string(self) -> String {
-        self.into()
+    pub fn to_string(&self) -> String {
+        self.message.clone()
     }
 }
 

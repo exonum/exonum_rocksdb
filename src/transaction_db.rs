@@ -1,7 +1,6 @@
-
-pub use self::transaction::{Transaction, TransactionOptions};
-use db::{Inner, DBIterator, DBRawIterator, IteratorMode};
 use super::{Options, Error, ReadOptions, WriteOptions, DBVector};
+pub use super::transaction::{Transaction, TransactionOptions};
+use db::{Inner, DBIterator, DBRawIterator, IteratorMode};
 use ffi;
 
 use libc::{c_char, size_t};
@@ -11,8 +10,6 @@ use std::path::Path;
 
 unsafe impl Send for TransactionDB {}
 unsafe impl Sync for TransactionDB {}
-
-pub mod transaction;
 
 pub struct TransactionDB {
     pub inner: *mut ffi::rocksdb_transactiondb_t,
@@ -42,7 +39,7 @@ impl TransactionDB {
         opts: &Options,
         txn_db_opts: &TransactionDBOptions,
         path: P,
-    ) -> Result<TransactionDB, Error> {
+    ) -> Result<Self, Error> {
         let path = path.as_ref();
         let cpath = match CString::new(path.to_string_lossy().as_bytes()) {
             Ok(c) => c,
@@ -134,7 +131,7 @@ impl TransactionDB {
         }
     }
 
-    
+
 
     pub fn transaction_begin(
         &self,
@@ -222,7 +219,6 @@ impl<'a> Inner for Snapshot<'a> {
 }
 
 impl TransactionDBOptions {
-
     pub fn set_max_num_locks(&mut self, max_num_locks: i64) {
         unsafe {
             ffi::rocksdb_transactiondb_options_set_max_num_locks(self.inner, max_num_locks);
@@ -237,18 +233,21 @@ impl TransactionDBOptions {
 
     pub fn set_transaction_lock_timeout(&mut self, txn_lock_timeout: i64) {
         unsafe {
-            ffi::rocksdb_transactiondb_options_set_transaction_lock_timeout(self.inner,
-                                                                            txn_lock_timeout);
+            ffi::rocksdb_transactiondb_options_set_transaction_lock_timeout(
+                self.inner,
+                txn_lock_timeout,
+            );
         }
     }
 
     pub fn set_default_lock_timeout(&mut self, default_lock_timeout: i64) {
         unsafe {
-            ffi::rocksdb_transactiondb_options_set_default_lock_timeout(self.inner,
-                                                                        default_lock_timeout);
+            ffi::rocksdb_transactiondb_options_set_default_lock_timeout(
+                self.inner,
+                default_lock_timeout,
+            );
         }
     }
-
 }
 
 impl Default for TransactionDBOptions {

@@ -1,10 +1,11 @@
-use super::{WriteOptions, Error, DBVector, ReadOptions};
-use transaction_db::TransactionDB;
+use super::{WriteOptions, Error, DBVector, ReadOptions, ColumnFamily};
 use db::{DBIterator, IteratorMode};
 use ffi;
 
 use libc::{c_char, size_t, c_uchar};
+use optimistic_txn_db::{OptimisticTransactionDB, OptimisticTransactionOptions};
 use std::ptr::null_mut;
+use transaction_db::TransactionDB;
 
 pub struct Transaction {
     pub inner: *mut ffi::rocksdb_transaction_t,
@@ -32,10 +33,41 @@ impl Transaction {
         }
     }
 
+    pub fn new_optimistic(
+        db: &OptimisticTransactionDB,
+        options: &WriteOptions,
+        txn_options: &OptimisticTransactionOptions,
+    ) -> Self {
+        unsafe {
+            Transaction {
+                inner: ffi::rocksdb_optimistictransaction_begin(
+                    db.inner,
+                    options.inner,
+                    txn_options.inner,
+                    null_mut(),
+                ),
+            }
+        }
+    }
+
     pub fn put(&self, key: &[u8], value: &[u8]) -> Result<(), Error> {
         unsafe {
             ffi_try!(ffi::rocksdb_transaction_put(
                 self.inner,
+                key.as_ptr() as *const c_char,
+                key.len() as size_t,
+                value.as_ptr() as *const c_char,
+                value.len() as size_t
+            ));
+            Ok(())
+        }
+    }
+
+    pub fn put_cf(&self, cf: ColumnFamily, key: &[u8], value: &[u8]) -> Result<(), Error> {
+        unsafe {
+            ffi_try!(ffi::rocksdb_transaction_put_cf(
+                self.inner,
+                cf.inner,
                 key.as_ptr() as *const c_char,
                 key.len() as size_t,
                 value.as_ptr() as *const c_char,
@@ -79,6 +111,46 @@ impl Transaction {
         }
     }
 
+    pub fn get_cf(&self, cf: ColumnFamily, key: &[u8]) -> Result<Option<DBVector>, Error> {
+        let opts = ReadOptions::default();
+        self.get_cf_opt(key, cf, &opts)
+    }
+
+    pub fn get_cf_opt(
+        &self,
+        key: &[u8],
+        cf: ColumnFamily,
+        readopts: &ReadOptions,
+    ) -> Result<Option<DBVector>, Error> {
+        if readopts.inner.is_null() {
+            return Err(Error::new(
+                "Unable to create RocksDB read options. \
+                                   This is a fairly trivial call, and its \
+                                   failure may be indicative of a \
+                                   mis-compiled or mis-loaded RocksDB \
+                                   library."
+                    .to_owned(),
+            ));
+        }
+
+        unsafe {
+            let mut val_len: size_t = 0;
+            let val = ffi_try!(ffi::rocksdb_transaction_get_cf(
+                self.inner,
+                readopts.inner,
+                cf.inner,
+                key.as_ptr() as *const c_char,
+                key.len() as size_t,
+                &mut val_len
+            )) as *mut u8;
+            if val.is_null() {
+                Ok(None)
+            } else {
+                Ok(Some(DBVector::from_c(val, val_len)))
+            }
+        }
+    }
+
     pub fn delete(&self, key: &[u8]) -> Result<(), Error> {
         unsafe {
             ffi_try!(ffi::rocksdb_transaction_delete(
@@ -86,8 +158,20 @@ impl Transaction {
                 key.as_ptr() as *const c_char,
                 key.len() as size_t
             ));
-            Ok(())
         }
+        Ok(())
+    }
+
+    pub fn delete_cf(&self, cf: ColumnFamily, key: &[u8]) -> Result<(), Error> {
+        unsafe {
+            ffi_try!(ffi::rocksdb_transaction_delete_cf(
+                self.inner,
+                cf.inner,
+                key.as_ptr() as *const c_char,
+                key.len() as size_t
+            ));
+        }
+        Ok(())
     }
 
     pub fn commit(&self) -> Result<(), Error> {
@@ -110,7 +194,20 @@ impl Transaction {
     }
 
     pub fn iterator_opt(&self, opts: &ReadOptions) -> DBIterator {
-        DBIterator::new_txn(self, &opts, IteratorMode::Start)
+        DBIterator::new_txn(self, opts, IteratorMode::Start)
+    }
+
+    pub fn iterator_cf(&self, cf_handler: ColumnFamily) -> Result<DBIterator, Error> {
+        let opts = ReadOptions::default();
+        DBIterator::new_txn_cf(self, cf_handler, &opts, IteratorMode::Start)
+    }
+
+    pub fn iterator_opt_cf(
+        &self,
+        cf_handler: ColumnFamily,
+        opts: &ReadOptions,
+    ) -> Result<DBIterator, Error> {
+        DBIterator::new_txn_cf(self, cf_handler, opts, IteratorMode::Start)
     }
 }
 

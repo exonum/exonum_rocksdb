@@ -1,20 +1,24 @@
 extern crate exonum_rocksdb;
 
+use exonum_rocksdb::{TransactionDB, Options, WriteOptions, TransactionOptions,
+                     TransactionDBOptions};
 use std::thread;
 use std::time::Duration;
-use exonum_rocksdb::{TransactionDB, Options, WriteOptions, TransactionOptions, TransactionDBOptions};
 
 
 fn print_stats(opts: &Options, times: u32) {
     for _ in 0..times {
-        println!("\n\n####### DB statistics #########\n\n{}", opts.get_statistics().unwrap());
+        println!(
+            "\n\n####### DB statistics #########\n\n{}",
+            opts.get_statistics().unwrap()
+        );
         thread::sleep(Duration::from_secs(2));
     }
 }
 
 fn main() {
     let path = "/tmp/rookkkss";
-    
+
     {
         let mut opts = Options::default();
         opts.create_if_missing(true);
@@ -46,13 +50,15 @@ fn main() {
         {
             let txn2 = db.transaction_begin(&w_opts, &txn_opts);
             for (key, value) in txn2.iterator() {
-                println!("key: {} value: {}",
-                         String::from_utf8(key.to_vec()).unwrap(),
-                         String::from_utf8(value.to_vec()).unwrap());
+                println!(
+                    "key: {} value: {}",
+                    String::from_utf8(key.to_vec()).unwrap(),
+                    String::from_utf8(value.to_vec()).unwrap()
+                );
             }
 
             let _ = txn2.put(b"key4", b"value5");
-//            txn2.commit();
+            let _ = txn2.commit();
         }
 
         assert!(txn.get(b"key4").unwrap().is_some());
@@ -67,15 +73,17 @@ fn main() {
         let iter = txn.iterator();
 
         for (key, value) in iter {
-            println!("key: {} value: {}", 
-                String::from_utf8(key.to_vec()).unwrap(), 
-                String::from_utf8(value.to_vec()).unwrap());
+            println!(
+                "key: {} value: {}",
+                String::from_utf8(key.to_vec()).unwrap(),
+                String::from_utf8(value.to_vec()).unwrap()
+            );
         }
 
         print_stats(&opts, 1);
     }
 
-    if let Err(e) =  TransactionDB::destroy(&Options::default(), path) {
+    if let Err(e) = TransactionDB::destroy(&Options::default(), path) {
         println!("Error destroying db: {}", e);
     }
 }

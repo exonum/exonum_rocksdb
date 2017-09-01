@@ -61,7 +61,11 @@ extern "C" {
     pub fn rocksdb_restore_options_set_keep_log_files(opt: *mut rocksdb_restore_options_t,
                                                       v: c_int);
 
-    pub fn rocksdb_backup_engine_restore_db_from_latest_backup(be: *mut rocksdb_backup_engine_t, db_dir: *const c_char, wal_dir: *const c_char, restore_options: *const rocksdb_restore_options_t, errptr: *mut *mut c_char);
+    pub fn rocksdb_backup_engine_restore_db_from_latest_backup(be: *mut rocksdb_backup_engine_t,
+                                                               db_dir: *const c_char,
+                                                               wal_dir: *const c_char,
+                                                               restore_options: *const rocksdb_restore_options_t,
+                                                               errptr: *mut *mut c_char);
 
     pub fn rocksdb_backup_engine_get_backup_info(be: *mut rocksdb_backup_engine_t)
                                                  -> *const rocksdb_backup_engine_info_t;
@@ -88,9 +92,24 @@ extern "C" {
 
     pub fn rocksdb_backup_engine_close(be: *mut rocksdb_backup_engine_t);
 
-    pub fn rocksdb_open_column_families(options: *const rocksdb_options_t, name: *const c_char, num_column_families: c_int, column_family_names: *const *const c_char, column_family_options: *const *const rocksdb_options_t, column_family_handles: *mut *mut rocksdb_column_family_handle_t, errptr: *mut *mut c_char) -> *mut rocksdb_t;
+    pub fn rocksdb_open_column_families(options: *const rocksdb_options_t,
+                                        name: *const c_char,
+                                        num_column_families: c_int,
+                                        column_family_names: *const *const c_char,
+                                        column_family_options: *const *const rocksdb_options_t,
+                                        column_family_handles: *mut *mut rocksdb_column_family_handle_t,
+                                        errptr: *mut *mut c_char)
+                                        -> *mut rocksdb_t;
 
-    pub fn rocksdb_open_for_read_only_column_families(options: *const rocksdb_options_t, name: *const c_char, num_column_families: c_int, column_family_names: *const *const c_char, column_family_options: *const *const rocksdb_options_t, column_family_handles: *mut *mut rocksdb_column_family_handle_t, error_if_log_file_exist: c_uchar, errptr: *mut *mut c_char) -> *mut rocksdb_t;
+    pub fn rocksdb_open_for_read_only_column_families(options: *const rocksdb_options_t,
+                                                      name: *const c_char,
+                                                      num_column_families: c_int,
+                                                      column_family_names: *const *const c_char,
+                                                      column_family_options: *const *const rocksdb_options_t,
+                                                      column_family_handles: *mut *mut rocksdb_column_family_handle_t,
+                                                      error_if_log_file_exist: c_uchar,
+                                                      errptr: *mut *mut c_char)
+                                                      -> *mut rocksdb_t;
 
     pub fn rocksdb_list_column_families(options: *const rocksdb_options_t,
                                         name: *const c_char,
@@ -502,7 +521,8 @@ extern "C" {
     pub fn rocksdb_options_set_compaction_filter(opt: *mut rocksdb_options_t,
                                                  filter: *mut rocksdb_compactionfilter_t);
 
-    pub fn rocksdb_options_set_compaction_filter_factory(opt: *mut rocksdb_options_t, factory: *mut rocksdb_compactionfilterfactory_t);
+    pub fn rocksdb_options_set_compaction_filter_factory(opt: *mut rocksdb_options_t,
+                                                         factory: *mut rocksdb_compactionfilterfactory_t);
 
     pub fn rocksdb_options_compaction_readahead_size(opt: *mut rocksdb_options_t, s: size_t);
 
@@ -576,7 +596,9 @@ extern "C" {
     pub fn rocksdb_options_set_max_grandparent_overlap_factor(opt: *mut rocksdb_options_t,
                                                               v: c_int);
 
-    pub fn rocksdb_options_set_max_bytes_for_level_multiplier_additional(opt: *mut rocksdb_options_t, level_values: *mut c_int, num_levels: size_t);
+    pub fn rocksdb_options_set_max_bytes_for_level_multiplier_additional(opt: *mut rocksdb_options_t,
+                                                                         level_values: *mut c_int,
+                                                                         num_levels: size_t);
 
     pub fn rocksdb_options_enable_statistics(opt: *mut rocksdb_options_t);
 
@@ -716,7 +738,8 @@ extern "C" {
 
     pub fn rocksdb_options_set_compaction_style(opt: *mut rocksdb_options_t, style: c_int);
 
-    pub fn rocksdb_options_set_universal_compaction_options(opt: *mut rocksdb_options_t, uco: *mut rocksdb_universal_compaction_options_t);
+    pub fn rocksdb_options_set_universal_compaction_options(opt: *mut rocksdb_options_t,
+                                                            uco: *mut rocksdb_universal_compaction_options_t);
 
     pub fn rocksdb_options_set_fifo_compaction_options(opt: *mut rocksdb_options_t,
                                                        fifo: *mut rocksdb_fifo_compaction_options_t);
@@ -752,7 +775,11 @@ extern "C" {
 
     // Compaction Filter factory
 
-    pub fn rocksdb_compactionfilterfactory_create(state: *mut c_void, destructor: Option<unsafe extern "C" fn(state: *mut c_void)>, create_compaction_filter: Option<unsafe extern "C" fn(state: *mut c_void, context: *mut rocksdb_compactionfiltercontext_t) -> *mut rocksdb_compactionfilter_t>, name: Option<unsafe extern "C" fn(state: *mut c_void) -> *const c_char>) -> *mut rocksdb_compactionfilterfactory_t;
+    pub fn rocksdb_compactionfilterfactory_create(state: *mut c_void, destructor: Option<unsafe extern "C" fn(state: *mut c_void)>,
+                                                  create_compaction_filter: Option<unsafe extern "C" fn(state: *mut c_void,
+                                                  context: *mut rocksdb_compactionfiltercontext_t) -> *mut rocksdb_compactionfilter_t>,
+                                                  name: Option<unsafe extern "C" fn(state: *mut c_void) -> *const c_char>)
+                                                  -> *mut rocksdb_compactionfilterfactory_t;
 
     pub fn rocksdb_compactionfilterfactory_destroy(factory: *mut rocksdb_compactionfilterfactory_t);
 
@@ -774,7 +801,12 @@ extern "C" {
 
     // Filter policy
 
-    pub fn rocksdb_filterpolicy_create(state: *mut c_void, destructor: Option<unsafe extern "C" fn(state: *mut c_void)>, create_filter: Option<unsafe extern "C" fn(state: *mut c_void, key_array: *const *const c_char, key_length_array: *const size_t, num_keys: c_int, filter_length: *mut size_t) -> *mut c_char>, key_may_match: Option<unsafe extern "C" fn(state: *mut c_void, key: *const c_char, length: size_t, filter: *const c_char, filter_length: size_t) -> c_uchar>, delete_filter: Option<unsafe extern "C" fn(state: *mut c_void, filter: *const c_char, filter_length: size_t)>, name: Option<unsafe extern "C" fn(state: *mut c_void) -> *const c_char>) -> *mut rocksdb_filterpolicy_t;
+    pub fn rocksdb_filterpolicy_create(state: *mut c_void, destructor: Option<unsafe extern "C" fn(state: *mut c_void)>,
+                                       create_filter: Option<unsafe extern "C" fn(state: *mut c_void,
+                                       key_array: *const *const c_char,
+                                       key_length_array: *const size_t,
+                                       num_keys: c_int,
+                                       filter_length: *mut size_t) -> *mut c_char>, key_may_match: Option<unsafe extern "C" fn(state: *mut c_void, key: *const c_char, length: size_t, filter: *const c_char, filter_length: size_t) -> c_uchar>, delete_filter: Option<unsafe extern "C" fn(state: *mut c_void, filter: *const c_char, filter_length: size_t)>, name: Option<unsafe extern "C" fn(state: *mut c_void) -> *const c_char>) -> *mut rocksdb_filterpolicy_t;
 
     pub fn rocksdb_filterpolicy_destroy(filter: *mut rocksdb_filterpolicy_t);
 
@@ -977,6 +1009,44 @@ extern "C" {
                                         keylen: size_t,
                                         errptr: *mut *mut c_char);
 
+    // Optimistic transactions DB
+
+    pub fn rocksdb_optimistictransactiondb_open(options: *const rocksdb_options_t,
+                                                name: *const c_char,
+                                                errptr: *mut *mut c_char)
+                                                -> *mut rocksdb_optimistictransactiondb_t;
+
+    pub fn rocksdb_optimistictransactiondb_open_column_families(options: *const rocksdb_options_t,
+                                                                name: *const c_char,
+                                                                num_column_families: c_int,
+                                                                column_family_names: *const *const c_char,
+                                                                column_family_options: *const *const rocksdb_options_t,
+                                                                column_family_handles: *mut *mut rocksdb_column_family_handle_t,
+                                                                errptr: *mut *mut c_char)
+                                                                -> *mut rocksdb_optimistictransactiondb_t;
+
+    pub fn rocksdb_optimistictransactiondb_get_base_db(opt_txn_db: *mut rocksdb_optimistictransactiondb_t)
+                                                       -> *mut rocksdb_t;
+
+    pub fn rocksdb_optimistictransactiondb_close_base_db(base_db: *mut rocksdb_t);
+
+    pub fn rocksdb_optimistictransactiondb_close(opt_txn_db: *mut rocksdb_optimistictransactiondb_t);
+
+    pub fn rocksdb_optimistictransaction_begin(opt_txn_db: *mut rocksdb_optimistictransactiondb_t,
+                                               write_options: *const rocksdb_writeoptions_t,
+                                               otxn_options: *const rocksdb_optimistictransaction_options_t,
+                                               old_txn: *mut rocksdb_transaction_t)
+                                                -> *mut rocksdb_transaction_t;
+
+    pub fn rocksdb_optimistictransaction_options_create() -> *mut rocksdb_optimistictransaction_options_t;
+
+    pub fn rocksdb_optimistictransaction_options_destroy(
+        opt: *mut rocksdb_optimistictransaction_options_t);
+
+    pub fn rocksdb_optimistictransaction_options_set_set_snapshot(
+        opt: *mut rocksdb_optimistictransaction_options_t, v: c_uchar);
+
+
     // Transaction
 
     pub fn rocksdb_transaction_begin(txn_db: *mut rocksdb_transactiondb_t,
@@ -989,12 +1059,25 @@ extern "C" {
                                                opts: *const rocksdb_readoptions_t) 
                                                -> *mut rocksdb_iterator_t;
 
+    pub fn rocksdb_transaction_create_iterator_cf(txn: *mut rocksdb_transaction_t,
+                                                  opts: *const rocksdb_readoptions_t,
+                                                  column_family: *mut rocksdb_column_family_handle_t)
+                                                  -> *mut rocksdb_iterator_t;
+
     pub fn rocksdb_transaction_put(txn: *mut rocksdb_transaction_t,
                                    key: *const c_char,
                                    keylen: size_t,
                                    value: *const c_char,
                                    vallen: size_t,
                                    errptr: *mut *mut c_char);
+
+    pub fn rocksdb_transaction_put_cf(txn: *mut rocksdb_transaction_t,
+                                      column_family: *mut rocksdb_column_family_handle_t,
+                                      key: *const c_char,
+                                      keylen: size_t,
+                                      value: *const c_char,
+                                      vallen: size_t,
+                                      errptr: *mut *mut c_char);
 
     pub fn rocksdb_transaction_get(txn: *mut rocksdb_transaction_t,
                                    read_opts: *const rocksdb_readoptions_t,
@@ -1003,10 +1086,24 @@ extern "C" {
                                    vallen: *mut size_t,
                                    errptr: *mut *mut c_char) -> *mut c_char;
 
+    pub fn rocksdb_transaction_get_cf(txn: *mut rocksdb_transaction_t,
+                                      read_opts: *const rocksdb_readoptions_t,
+                                      column_family: *mut rocksdb_column_family_handle_t,
+                                      key: *const c_char,
+                                      keylen: size_t,
+                                      vallen: *mut size_t,
+                                      errptr: *mut *mut c_char) -> *mut c_char;
+
     pub fn rocksdb_transaction_delete(txn: *mut rocksdb_transaction_t,
                                       key: *const c_char,
                                       keylen: size_t,
                                       errptr: *mut *mut c_char);
+
+    pub fn rocksdb_transaction_delete_cf(txn: *mut rocksdb_transaction_t,
+                                         column_family: *mut rocksdb_column_family_handle_t,
+                                         key: *const c_char,
+                                         keylen: size_t,
+                                         errptr: *mut *mut c_char);
 
     pub fn rocksdb_transaction_commit(txn: *mut rocksdb_transaction_t, errptr: *mut *mut c_char);
 
@@ -1148,5 +1245,9 @@ pub enum rocksdb_transactiondb_t { }
 pub enum rocksdb_transaction_options_t { }
 
 pub enum rocksdb_transaction_t { }
+
+pub enum rocksdb_optimistictransaction_options_t { }
+
+pub enum rocksdb_optimistictransactiondb_t { }
 
 pub enum rocksdb_checkpoint_t { }
