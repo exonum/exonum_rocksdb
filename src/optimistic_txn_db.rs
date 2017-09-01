@@ -1,4 +1,3 @@
-
 use ColumnFamily;
 use DBIterator;
 use DBRawIterator;
@@ -9,16 +8,16 @@ use Options;
 use ReadOptions;
 use WriteOptions;
 use db::Inner;
+use transaction::Transaction;
+use utils;
+
+use std::collections::BTreeMap;
+use std::ffi::CString;
+use std::path::Path;
+use std::ptr;
 
 use ffi;
 use libc::{c_uchar, c_int};
-use std::collections::BTreeMap;
-
-use std::ffi::CString;
-use std::fs::create_dir_all;
-use std::path::Path;
-use std::ptr;
-use transaction::Transaction;
 
 pub struct OptimisticTransactionDB {
     pub inner: *mut ffi::rocksdb_optimistictransactiondb_t,
@@ -35,22 +34,7 @@ impl OptimisticTransactionDB {
 
     pub fn open<P: AsRef<Path>>(opts: &Options, path: P) -> Result<Self, Error> {
         let path = path.as_ref();
-        let cpath = match CString::new(path.to_string_lossy().as_bytes()) {
-            Ok(c) => c,
-            Err(_) => {
-                return Err(Error::new(
-                    "Failed to convert path to CString when opening DB."
-                        .to_owned(),
-                ))
-            }
-        };
-
-        if let Err(e) = create_dir_all(&path) {
-            return Err(Error::new(
-                format!("Failed to create RocksDB directory: `{:?}`.", e),
-            ));
-        }
-
+        let cpath = utils::to_cpath(path)?;
         let db: *mut ffi::rocksdb_optimistictransactiondb_t = unsafe {
             ffi_try!(ffi::rocksdb_optimistictransactiondb_open(
                 opts.inner,
@@ -73,23 +57,7 @@ impl OptimisticTransactionDB {
 
     pub fn open_cf<P: AsRef<Path>>(opts: &Options, path: P, cfs: &[&str]) -> Result<Self, Error> {
         let path = path.as_ref();
-        let cpath = match CString::new(path.to_string_lossy().as_bytes()) {
-            Ok(c) => c,
-            Err(_) => {
-                return Err(Error::new(
-                    "Failed to convert path to CString \
-                                       when opening DB."
-                        .to_owned(),
-                ))
-            }
-        };
-
-        if let Err(e) = create_dir_all(&path) {
-            return Err(Error::new(
-                format!("Failed to create RocksDB directory: `{:?}`.", e),
-            ));
-        }
-
+        let cpath = utils::to_cpath(path)?;
         let db: *mut ffi::rocksdb_optimistictransactiondb_t;
         let mut cf_map = BTreeMap::new();
 
@@ -177,16 +145,7 @@ impl OptimisticTransactionDB {
     }
 
     pub fn create_cf(&mut self, name: &str, opts: &Options) -> Result<ColumnFamily, Error> {
-        let cname = match CString::new(name.as_bytes()) {
-            Ok(c) => c,
-            Err(_) => {
-                return Err(Error::new(
-                    "Failed to convert path to CString \
-                                       when opening rocksdb"
-                        .to_owned(),
-                ))
-            }
-        };
+        let cname = utils::to_cpath(Path::new(name))?;
         let cf = unsafe {
             let cf_handler = ffi_try!(ffi::rocksdb_create_column_family(
                 self.base_db,
@@ -218,7 +177,7 @@ impl OptimisticTransactionDB {
     }
 
     pub fn destroy<P: AsRef<Path>>(opts: &Options, path: P) -> Result<(), Error> {
-        let cpath = CString::new(path.as_ref().to_string_lossy().as_bytes()).unwrap();
+        let cpath = utils::to_cpath(path.as_ref())?;
         unsafe {
             ffi_try!(ffi::rocksdb_destroy_db(opts.inner, cpath.as_ptr()));
         }

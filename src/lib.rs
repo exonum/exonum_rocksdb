@@ -54,6 +54,7 @@ mod db_options;
 pub mod transaction_db;
 pub mod optimistic_txn_db;
 pub mod transaction;
+pub mod utils;
 
 pub use compaction_filter::Decision as CompactionDecision;
 pub use db::{DBCompactionStyle, DBCompressionType, DBIterator, DBRawIterator, DBRecoveryMode,

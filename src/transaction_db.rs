@@ -1,12 +1,12 @@
-use super::{Options, Error, ReadOptions, WriteOptions, DBVector};
+use {Options, Error, ReadOptions, WriteOptions, DBVector};
 pub use super::transaction::{Transaction, TransactionOptions};
 use db::{Inner, DBIterator, DBRawIterator, IteratorMode};
-use ffi;
+use utils;
+
+use std::path::Path;
 
 use libc::{c_char, size_t};
-use std::ffi::CString;
-use std::fs;
-use std::path::Path;
+use ffi;
 
 unsafe impl Send for TransactionDB {}
 unsafe impl Sync for TransactionDB {}
@@ -41,25 +41,7 @@ impl TransactionDB {
         path: P,
     ) -> Result<Self, Error> {
         let path = path.as_ref();
-        let cpath = match CString::new(path.to_string_lossy().as_bytes()) {
-            Ok(c) => c,
-            Err(_) => {
-                return Err(Error::new(
-                    "Failed to convert path to CString \
-                                       when opening DB."
-                        .to_owned(),
-                ))
-            }
-        };
-
-        if let Err(e) = fs::create_dir_all(&path) {
-            return Err(Error::new(format!(
-                "Failed to create RocksDB \
-                                           directory: `{:?}`.",
-                e
-            )));
-        }
-
+        let cpath = utils::to_cpath(path)?;
         let db: *mut ffi::rocksdb_transactiondb_t = unsafe {
             ffi_try!(ffi::rocksdb_transactiondb_open(
                 opts.inner,
@@ -146,7 +128,7 @@ impl TransactionDB {
     }
 
     pub fn destroy<P: AsRef<Path>>(opts: &Options, path: P) -> Result<(), Error> {
-        let cpath = CString::new(path.as_ref().to_string_lossy().as_bytes()).unwrap();
+        let cpath = utils::to_cpath(path.as_ref())?;
         unsafe {
             ffi_try!(ffi::rocksdb_destroy_db(opts.inner, cpath.as_ptr()));
         }
@@ -154,7 +136,7 @@ impl TransactionDB {
     }
 
     pub fn repair<P: AsRef<Path>>(opts: Options, path: P) -> Result<(), Error> {
-        let cpath = CString::new(path.as_ref().to_string_lossy().as_bytes()).unwrap();
+        let cpath = utils::to_cpath(path.as_ref())?;
         unsafe {
             ffi_try!(ffi::rocksdb_repair_db(opts.inner, cpath.as_ptr()));
         }
