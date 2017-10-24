@@ -5,85 +5,71 @@ addons:
     packages:
     - gcc
     - g++
-    - libleveldb-dev
     - libssl-dev
+    - libcurl4-openssl-dev
+    - libelf-dev
+    - libdw-dev
+    - binutils-dev
+    - libiberty-dev
+    - librocksdb-dev
     - libsnappy-dev
- 
+
 rust:
-- stable
+  - stable
+matrix:
+  include:
+    - rust: nightly-2017-10-03
+      env: FEATURE=clippy
 
 cache:
   directories:
   - $HOME/.cargo
   - $HOME/.local
   - $TRAVIS_BUILD_DIR/target
-sudo: false
-group: deprecated-2017Q2
+
 dist: trusty
+sudo: required
 
 env:
   global:
-  - CLIPPY_VERS=0.0.142
   - RUSTFMT_VERS=0.9.0
+  - CLIPPY_VERS=0.0.165
+  - CARGO_INCREMENTAL=1
+  - RUSTFLAGS="-C link-dead-code"
+  - CODECOV_TOKEN=90006bf6-e4b7-4825-b880-8d19c4e21c21
+  - ROCKSDB_LIB_DIR=$LD_LIBRARY_PATH
+  - SNAPPY_LIB_DIR=$LD_LIBRARY_PATH
+  matrix:
+  - FEATURE=fmt
+  - FEATURE=test-lib
+  - FEATURE=test-doc
 
 install:
 - |
-  if [ ! -f "$HOME/.local/lib/librocksdb.so" ]; then
-    wget -O rocksdb-5.6.1.tar.gz https://github.com/facebook/rocksdb/archive/v5.6.1.tar.gz
-    tar xvf rocksdb-5.6.1.tar.gz
-    cd rocksdb-5.6.1
-    INSTALL_PATH=$HOME/.local make install-shared
-    cd ..
-  fi
-- export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.local/lib
-- export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/.local/lib/pkgconfig
-# - |
-#   if [[ "$FEATURE" == "clippy" ]]; then
-#     cargo clippy --version | grep $CLIPPY_VERS || cargo install clippy --force --vers $CLIPPY_VERS
-#   fi
-# TODO: rename stage and feature
+  case "$FEATURE" in
+  clippy )
+    cargo clippy --version | grep $CLIPPY_VERS || cargo install clippy --force --vers $CLIPPY_VERS
+  ;;
+  esac
 - |
   if [[ "$FEATURE" == "fmt" ]]; then
     cargo-audit -V || cargo install cargo-audit --force
-    # rustfmt -V | grep $RUSTFMT_VERS || cargo install rustfmt --vers $RUSTFMT_VERS --force
+    rustfmt -V | grep $RUSTFMT_VERS || cargo install rustfmt --vers $RUSTFMT_VERS --force
     cargo update
-  fi
+    fi
 - cargo install --list
-
-script: skip
-
-jobs:
-  include:
-  # - stage: format
-  #   env:
-  #   - FEATURE=fmt
-  #   script:
-  #   - cargo audit
-  #   - cargo fmt -p exonum-configuration -- --write-mode=diff
-  #   - cd sandbox_tests && cargo fmt -p exonum-configuration-sandbox -- --write-mode=diff
-  # - stage: lint
-  #   rust: nightly-2017-07-05
-  #   env:
-  #   - FEATURE=clippy
-  #   script:
-  #   - cargo clippy -- -D warnings
-  # - stage: lint
-  #   rust: nightly-2017-07-05
-  #   env:
-  #   - FEATURE=clippy
-  #   # Needed to distinguish among `clippy` jobs when creating caches;
-  #   # see https://docs.travis-ci.com/user/caching#Caches-and-build-matrices
-  #   - SANDBOX=1
-  #   script:
-  #   - cd sandbox_tests && cargo clippy -- -D warnings
-  - stage: test
-    env:
-    - ROCKSDB_LIB_DIR=$HOME/.local/lib
-    - SNAPPY_LIB_DIR=/usr/lib/x86_64-linux-gnu
-    script:
-    - cargo test
-
-# notifications:
-#   slack:
-#     rooms:
-#       secure: N3SOzAK7F4v3zAcvFBLdJmLJkLEpsp+euo75MErBmnk+goX18MAdXxJPIUA5ZPUHaO3pxtF0dB2U3G3b+AyF6rHTLxPTapa8M7N1i0p7LI7DyJGJ1rSnSmVpaX0C6a1dmzotCAF2WkyJWQwT5hq79VPbxIRsOuLDwxjPJwUffk8gDyTVHqqSb8KI9FPgsLpx54/TJJLmPYY2w8/+eZCjrgH0SZc9OX2ux29LflIGuRjKbYxrSkQrcQblr5Ak5k0YUfFeZ5NnQq5OE40wE7eBEVB8DK7lhgEeuMSTSat+/ShVINLZwL3aaCiHuF3VYlUtRjaEouoCatdGlvwNjo5DpKX81nXJoEjB0iQzZrDHIkbVPVOkkkBtWVuKCHue2nYb+rsI2kgtbjqb173JA/j2uZxYnc9xIEUe/VrqmZsXTyiUC7KCQc3Lk7A1juxUzn0gbzQkKcCeL48dEcnaAGrMqYY3P1O6I4U+LUlmixOTrEWEsXNQlLv0Ud9w+ZDjW+if0NxwB0jUgCB2cP6N1Wzyt0O3TwZ3+b6uyM2WrUYAv/mPu8FlUTZhJ33IvqtPTqsg6k4yZ2S8uBAmYCSjBLGDWusRKxwNep9s4VnhF7mqLr4U/y4FqvwnCKgx+7Nzcfoj4A9L6SO+kog1CUs3voLX2U96emGBZ/1Gs/o6KjoikHw=
+script: |
+  case "$FEATURE" in
+  "fmt" )
+      cargo audit && cargo fmt -- --write-mode=diff
+  ;;
+  "clippy" )
+      cargo clippy -- -D warnings
+  ;;
+  "test-lib" )
+      RUST_LOG=off cargo test --tests --lib
+  ;;
+  "test-doc" )
+      cargo test --doc -- --test-threads=2
+  ;;
+  esac

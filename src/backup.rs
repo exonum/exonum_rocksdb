@@ -22,15 +22,15 @@ use std::ffi::CString;
 use std::path::Path;
 
 pub struct BackupEngine {
-    inner: *mut ffi::rocksdb_backup_engine_t,
+    inner: *mut ffi::rocksdb_backup_engine_t
 }
 
 pub struct BackupEngineOptions {
-    inner: *mut ffi::rocksdb_options_t,
+    inner: *mut ffi::rocksdb_options_t
 }
 
 pub struct RestoreOptions {
-    inner: *mut ffi::rocksdb_restore_options_t,
+    inner: *mut ffi::rocksdb_restore_options_t
 }
 
 impl BackupEngine {
@@ -46,7 +46,7 @@ impl BackupEngine {
                 return Err(Error::new(
                     "Failed to convert path to CString \
                                        when opening backup engine"
-                        .to_owned(),
+                        .to_owned()
                 ))
             }
         };

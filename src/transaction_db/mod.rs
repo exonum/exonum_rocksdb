@@ -15,17 +15,16 @@ unsafe impl Sync for TransactionDB {}
 pub mod transaction;
 
 pub struct TransactionDB {
-    pub inner: *mut ffi::rocksdb_transactiondb_t,
-    // path: PathBuf,
+    pub inner: *mut ffi::rocksdb_transactiondb_t // path: PathBuf
 }
 
 pub struct TransactionDBOptions {
-    inner: *mut ffi::rocksdb_transactiondb_options_t,
+    inner: *mut ffi::rocksdb_transactiondb_options_t
 }
 
 pub struct Snapshot<'a> {
     db: &'a TransactionDB,
-    inner: *const ffi::rocksdb_snapshot_t,
+    inner: *const ffi::rocksdb_snapshot_t
 }
 
 impl TransactionDB {
@@ -50,7 +49,7 @@ impl TransactionDB {
                 return Err(Error::new(
                     "Failed to convert path to CString \
                                        when opening DB."
-                        .to_owned(),
+                        .to_owned()
                 ))
             }
         };
@@ -76,7 +75,7 @@ impl TransactionDB {
         }
 
         Ok(TransactionDB {
-            inner: db,
+            inner: db
             // path: path.to_path_buf(),
         })
     }
@@ -113,7 +112,7 @@ impl TransactionDB {
                                    failure may be indicative of a \
                                    mis-compiled or mis-loaded RocksDB \
                                    library."
-                    .to_owned(),
+                    .to_owned()
             ));
         }
 
@@ -134,7 +133,7 @@ impl TransactionDB {
         }
     }
 
-    
+
 
     pub fn transaction_begin(
         &self,
@@ -178,7 +177,7 @@ impl<'a> Snapshot<'a> {
         let snapshot = unsafe { ffi::rocksdb_transactiondb_create_snapshot(db.inner) };
         Snapshot {
             db: db,
-            inner: snapshot,
+            inner: snapshot
         }
     }
 
@@ -222,7 +221,6 @@ impl<'a> Inner for Snapshot<'a> {
 }
 
 impl TransactionDBOptions {
-
     pub fn set_max_num_locks(&mut self, max_num_locks: i64) {
         unsafe {
             ffi::rocksdb_transactiondb_options_set_max_num_locks(self.inner, max_num_locks);
@@ -237,18 +235,21 @@ impl TransactionDBOptions {
 
     pub fn set_transaction_lock_timeout(&mut self, txn_lock_timeout: i64) {
         unsafe {
-            ffi::rocksdb_transactiondb_options_set_transaction_lock_timeout(self.inner,
-                                                                            txn_lock_timeout);
+            ffi::rocksdb_transactiondb_options_set_transaction_lock_timeout(
+                self.inner,
+                txn_lock_timeout
+            );
         }
     }
 
     pub fn set_default_lock_timeout(&mut self, default_lock_timeout: i64) {
         unsafe {
-            ffi::rocksdb_transactiondb_options_set_default_lock_timeout(self.inner,
-                                                                        default_lock_timeout);
+            ffi::rocksdb_transactiondb_options_set_default_lock_timeout(
+                self.inner,
+                default_lock_timeout
+            );
         }
     }
-
 }
 
 impl Default for TransactionDBOptions {

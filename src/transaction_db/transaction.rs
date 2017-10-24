@@ -7,11 +7,11 @@ use libc::{c_char, size_t, c_uchar};
 use std::ptr::null_mut;
 
 pub struct Transaction {
-    pub inner: *mut ffi::rocksdb_transaction_t,
+    pub inner: *mut ffi::rocksdb_transaction_t
 }
 
 pub struct TransactionOptions {
-    inner: *mut ffi::rocksdb_transaction_options_t,
+    inner: *mut ffi::rocksdb_transaction_options_t
 }
 
 impl Transaction {
@@ -26,8 +26,8 @@ impl Transaction {
                     db.inner,
                     options.inner,
                     txn_options.inner,
-                    null_mut(),
-                ),
+                    null_mut()
+                )
             }
         }
     }
@@ -58,7 +58,7 @@ impl Transaction {
                                    failure may be indicative of a \
                                    mis-compiled or mis-loaded RocksDB \
                                    library."
-                    .to_owned(),
+                    .to_owned()
             ));
         }
 
@@ -110,7 +110,7 @@ impl Transaction {
     }
 
     pub fn iterator_opt(&self, opts: &ReadOptions) -> DBIterator {
-        DBIterator::new_txn(self, &opts, IteratorMode::Start)
+        DBIterator::new_txn(self, opts, IteratorMode::Start)
     }
 }
 
