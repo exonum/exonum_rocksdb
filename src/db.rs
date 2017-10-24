@@ -63,7 +63,8 @@ pub enum DBCompactionStyle {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum DBRecoveryMode {
-    TolerateCorruptedTailRecords = ffi::rocksdb_recovery_mode_tolerate_corrupted_tail_records as isize,
+    TolerateCorruptedTailRecords =
+        ffi::rocksdb_recovery_mode_tolerate_corrupted_tail_records as isize,
     AbsoluteConsistency = ffi::rocksdb_recovery_mode_absolute_consistency as isize,
     PointInTime = ffi::rocksdb_recovery_mode_point_in_time as isize,
     SkipAnyCorruptedRecord = ffi::rocksdb_recovery_mode_skip_any_corrupted_record as isize,
@@ -111,8 +112,8 @@ pub struct ReadOptions {
 /// # fn main() {
 /// let temp_dir = TempDir::new("storage1").unwrap();
 /// let mut db = DB::open_default(temp_dir.path()).unwrap();
-/// let snapshot = db.snapshot(); // Creates a longer-term snapshot of the DB, but closed when goes out of scope
-/// let mut iter = snapshot.iterator(IteratorMode::Start); // Make as many iterators as you'd like from one snapshot
+/// let snapshot = db.snapshot(); // Creates a longer-term snapshot of the DB
+/// let mut iter = snapshot.iterator(IteratorMode::Start); // Make as many iterators as you'd like
 /// # }
 /// ```
 ///
@@ -189,7 +190,7 @@ pub struct DBRawIterator {
 /// for (key, value) in iter {
 ///     println!("Saw {:?} {:?}", key, value);
 /// }
-/// iter = db.iterator(IteratorMode::From(b"my key", Direction::Forward)); // From a key in Direction::{forward,reverse}
+/// iter = db.iterator(IteratorMode::From(b"my key", Direction::Forward));
 /// for (key, value) in iter {
 ///     println!("Saw {:?} {:?}", key, value);
 /// }
@@ -402,7 +403,8 @@ impl DBRawIterator {
     ///    // There are no keys in the database
     /// }
     pub fn seek_for_prev(&mut self, key: &[u8]) {
-        unsafe { ffi::rocksdb_iter_seek_for_prev(self.inner, key.as_ptr() as *const c_char, key.len() as size_t); }
+        unsafe { ffi::rocksdb_iter_seek_for_prev(
+                    self.inner, key.as_ptr() as *const c_char, key.len() as size_t); }
     }
 */
 

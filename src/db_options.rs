@@ -14,8 +14,7 @@
 //
 
 
-use {BlockBasedOptions, DBCompactionStyle, DBCompressionType, DBRecoveryMode, Options,
-     WriteOptions};
+use {BlockBasedOptions, DBCompactionStyle, DBCompressionType, Options, WriteOptions};
 use compaction_filter::{self, CompactionFilterCallback, CompactionFilterFn, filter_callback};
 use comparator::{self, ComparatorCallback, CompareFn};
 use ffi;
@@ -70,14 +69,14 @@ impl BlockBasedOptions {
         }
     }
 
-    pub fn set_bloom_filter(&mut self, bits_per_key: c_int, block_based: bool) {
+    pub fn set_bloom_filter(&mut self, bits_per_key: c_int, _block_based: bool) {
         unsafe {
-            let bloom = if block_based {
-                ffi::rocksdb_filterpolicy_create_bloom(bits_per_key)
-            } else {
-                ffi::rocksdb_filterpolicy_create_bloom_full(bits_per_key)
-            };
-
+            //            let bloom = if block_based {
+            //                ffi::rocksdb_filterpolicy_create_bloom(bits_per_key)
+            //            } else {
+            //                ffi::rocksdb_filterpolicy_create_bloom_full(bits_per_key)
+            //            };
+            let bloom = ffi::rocksdb_filterpolicy_create_bloom(bits_per_key);
             ffi::rocksdb_block_based_options_set_filter_policy(self.inner, bloom);
         }
     }
@@ -747,41 +746,41 @@ impl Options {
         }
     }
 
-    /// Measure IO stats in compactions and flushes, if `true`.
-    ///
-    /// Default: `false`
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use exonum_rocksdb::Options;
-    ///
-    /// let mut opts = Options::default();
-    /// opts.set_report_bg_io_stats(true);
-    /// ```
-    pub fn set_report_bg_io_stats(&mut self, enable: bool) {
-        unsafe {
-            ffi::rocksdb_options_set_report_bg_io_stats(self.inner, enable as c_int);
-        }
-    }
+    //    /// Measure IO stats in compactions and flushes, if `true`.
+    //    ///
+    //    /// Default: `false`
+    //    ///
+    //    /// # Example
+    //    ///
+    //    /// ```
+    //    /// use exonum_rocksdb::Options;
+    //    ///
+    //    /// let mut opts = Options::default();
+    //    /// opts.set_report_bg_io_stats(true);
+    //    /// ```
+    //    pub fn set_report_bg_io_stats(&mut self, enable: bool) {
+    //        unsafe {
+    //            ffi::rocksdb_options_set_report_bg_io_stats(self.inner, enable as c_int);
+    //        }
+    //    }
 
-    /// Recovery mode to control the consistency while replaying WAL.
-    ///
-    /// Default: DBRecoveryMode::PointInTime
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use exonum_rocksdb::{Options, DBRecoveryMode};
-    ///
-    /// let mut opts = Options::default();
-    /// opts.set_wal_recovery_mode(DBRecoveryMode::AbsoluteConsistency);
-    /// ```
-    pub fn set_wal_recovery_mode(&mut self, mode: DBRecoveryMode) {
-        unsafe {
-            ffi::rocksdb_options_set_wal_recovery_mode(self.inner, mode as c_int);
-        }
-    }
+    //    /// Recovery mode to control the consistency while replaying WAL.
+    //    ///
+    //    /// Default: DBRecoveryMode::PointInTime
+    //    ///
+    //    /// # Example
+    //    ///
+    //    /// ```
+    //    /// use exonum_rocksdb::{Options, DBRecoveryMode};
+    //    ///
+    //    /// let mut opts = Options::default();
+    //    /// opts.set_wal_recovery_mode(DBRecoveryMode::AbsoluteConsistency);
+    //    /// ```
+    //    pub fn set_wal_recovery_mode(&mut self, mode: DBRecoveryMode) {
+    //        unsafe {
+    //            ffi::rocksdb_options_set_wal_recovery_mode(self.inner, mode as c_int);
+    //        }
+    //    }
 
     pub fn enable_statistics(&mut self) {
         unsafe {

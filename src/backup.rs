@@ -17,7 +17,7 @@
 use {DB, Error};
 use ffi;
 
-use libc::{c_int, uint32_t};
+use libc::c_int;
 use std::ffi::CString;
 use std::path::Path;
 
@@ -71,15 +71,15 @@ impl BackupEngine {
         }
     }
 
-    pub fn purge_old_backups(&mut self, num_backups_to_keep: usize) -> Result<(), Error> {
-        unsafe {
-            ffi_try!(ffi::rocksdb_backup_engine_purge_old_backups(
-                self.inner,
-                num_backups_to_keep as uint32_t
-            ));
-            Ok(())
-        }
-    }
+    //    pub fn purge_old_backups(&mut self, num_backups_to_keep: usize) -> Result<(), Error> {
+    //        unsafe {
+    //            ffi_try!(ffi::rocksdb_backup_engine_purge_old_backups(
+    //                self.inner,
+    //                num_backups_to_keep as uint32_t
+    //            ));
+    //            Ok(())
+    //        }
+    //    }
 }
 
 impl BackupEngineOptions {
