@@ -2,6 +2,8 @@ language: rust
 
 addons:
   apt:
+    sources:
+    - sourceline: 'ppa:ulikoehler/deb-buildscripts'
     packages:
     - gcc
     - g++
@@ -11,8 +13,8 @@ addons:
     - libdw-dev
     - binutils-dev
     - libiberty-dev
-    - librocksdb-dev
     - libsnappy-dev
+    - librocksdb
 
 rust:
   - stable
