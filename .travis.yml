@@ -3,7 +3,7 @@ language: rust
 addons:
   apt:
     sources:
-    - sourceline: 'ppa:ulikoehler/deb-buildscripts'
+    - sourceline: 'ppa:giskou/librocksdb'
     packages:
     - gcc
     - g++
@@ -14,7 +14,7 @@ addons:
     - binutils-dev
     - libiberty-dev
     - libsnappy-dev
-    - librocksdb-dev
+    - librocksdb
 
 rust:
   - stable
