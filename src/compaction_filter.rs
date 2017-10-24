@@ -29,7 +29,7 @@ pub enum Decision {
     /// Remove the object from the database
     Remove,
     /// Change the value for the key
-    Change(&'static [u8]),
+    Change(&'static [u8])
 }
 
 
@@ -38,7 +38,7 @@ pub enum Decision {
 /// This function takes the level of compaction, the key, and the existing value
 /// and returns the decision about how to handle the Key-Value pair.
 ///
-///  See [Options::set_compaction_filter][set_compaction_filter] for more details
+///  See [`Options::set_compaction_filter`][set_compaction_filter] for more details
 ///
 ///  [set_compaction_filter]: ../struct.Options.html#method.set_compaction_filter
 pub trait CompactionFilterFn: FnMut(u32, &[u8], &[u8]) -> Decision {}
@@ -54,7 +54,7 @@ where
     F: CompactionFilterFn,
 {
     pub name: CString,
-    pub filter_fn: F,
+    pub filter_fn: F
 }
 
 pub unsafe extern "C" fn destructor_callback<F>(raw_cb: *mut c_void)

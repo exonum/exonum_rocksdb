@@ -30,17 +30,17 @@ pub fn test_multithreaded() {
 
         db.put(b"key", b"value1").unwrap();
 
-        let db1 = db.clone();
+        let db1 = Arc::clone(&db);
         let j1 = thread::spawn(move || for _ in 1..N {
             db1.put(b"key", b"value1").unwrap();
         });
 
-        let db2 = db.clone();
+        let db2 = Arc::clone(&db);
         let j2 = thread::spawn(move || for _ in 1..N {
             db2.put(b"key", b"value2").unwrap();
         });
 
-        let db3 = db.clone();
+        let db3 = Arc::clone(&db);
         let j3 = thread::spawn(move || for _ in 1..N {
             match db3.get(b"key") {
                 Ok(Some(v)) => {

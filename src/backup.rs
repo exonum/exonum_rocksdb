@@ -17,20 +17,20 @@
 use {DB, Error};
 use ffi;
 
-use libc::{c_int, uint32_t};
+use libc::c_int;
 use std::ffi::CString;
 use std::path::Path;
 
 pub struct BackupEngine {
-    inner: *mut ffi::rocksdb_backup_engine_t,
+    inner: *mut ffi::rocksdb_backup_engine_t
 }
 
 pub struct BackupEngineOptions {
-    inner: *mut ffi::rocksdb_options_t,
+    inner: *mut ffi::rocksdb_options_t
 }
 
 pub struct RestoreOptions {
-    inner: *mut ffi::rocksdb_restore_options_t,
+    inner: *mut ffi::rocksdb_restore_options_t
 }
 
 impl BackupEngine {
@@ -46,7 +46,7 @@ impl BackupEngine {
                 return Err(Error::new(
                     "Failed to convert path to CString \
                                        when opening backup engine"
-                        .to_owned(),
+                        .to_owned()
                 ))
             }
         };
@@ -71,15 +71,15 @@ impl BackupEngine {
         }
     }
 
-    pub fn purge_old_backups(&mut self, num_backups_to_keep: usize) -> Result<(), Error> {
-        unsafe {
-            ffi_try!(ffi::rocksdb_backup_engine_purge_old_backups(
-                self.inner,
-                num_backups_to_keep as uint32_t
-            ));
-            Ok(())
-        }
-    }
+    //    pub fn purge_old_backups(&mut self, num_backups_to_keep: usize) -> Result<(), Error> {
+    //        unsafe {
+    //            ffi_try!(ffi::rocksdb_backup_engine_purge_old_backups(
+    //                self.inner,
+    //                num_backups_to_keep as uint32_t
+    //            ));
+    //            Ok(())
+    //        }
+    //    }
 }
 
 impl BackupEngineOptions {

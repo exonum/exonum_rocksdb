@@ -14,8 +14,7 @@
 //
 
 
-use {BlockBasedOptions, DBCompactionStyle, DBCompressionType, DBRecoveryMode, Options,
-     WriteOptions};
+use {BlockBasedOptions, DBCompactionStyle, DBCompressionType, Options, WriteOptions};
 use compaction_filter::{self, CompactionFilterCallback, CompactionFilterFn, filter_callback};
 use comparator::{self, ComparatorCallback, CompareFn};
 use ffi;
@@ -70,14 +69,14 @@ impl BlockBasedOptions {
         }
     }
 
-    pub fn set_bloom_filter(&mut self, bits_per_key: c_int, block_based: bool) {
+    pub fn set_bloom_filter(&mut self, bits_per_key: c_int, _block_based: bool) {
         unsafe {
-            let bloom = if block_based {
-                ffi::rocksdb_filterpolicy_create_bloom(bits_per_key)
-            } else {
-                ffi::rocksdb_filterpolicy_create_bloom_full(bits_per_key)
-            };
-
+            //            let bloom = if block_based {
+            //                ffi::rocksdb_filterpolicy_create_bloom(bits_per_key)
+            //            } else {
+            //                ffi::rocksdb_filterpolicy_create_bloom_full(bits_per_key)
+            //            };
+            let bloom = ffi::rocksdb_filterpolicy_create_bloom(bits_per_key);
             ffi::rocksdb_block_based_options_set_filter_policy(self.inner, bloom);
         }
     }
@@ -124,7 +123,7 @@ impl Options {
         unsafe {
             ffi::rocksdb_options_optimize_level_style_compaction(
                 self.inner,
-                memtable_memory_budget as uint64_t,
+                memtable_memory_budget as uint64_t
             );
         }
     }
@@ -195,7 +194,7 @@ impl Options {
             ffi::rocksdb_options_set_compression_per_level(
                 self.inner,
                 level_types.as_ptr(),
-                level_types.len() as size_t,
+                level_types.len() as size_t
             )
         }
     }
@@ -203,7 +202,7 @@ impl Options {
     pub fn set_merge_operator(&mut self, name: &str, merge_fn: MergeFn) {
         let cb = Box::new(MergeOperatorCallback {
             name: CString::new(name.as_bytes()).unwrap(),
-            merge_fn: merge_fn,
+            merge_fn: merge_fn
         });
 
         unsafe {
@@ -213,7 +212,7 @@ impl Options {
                 Some(full_merge_callback),
                 Some(partial_merge_callback),
                 None,
-                Some(merge_operator::name_callback),
+                Some(merge_operator::name_callback)
             );
             ffi::rocksdb_options_set_merge_operator(self.inner, mo);
         }
@@ -241,7 +240,7 @@ impl Options {
     {
         let cb = Box::new(CompactionFilterCallback {
             name: CString::new(name.as_bytes()).unwrap(),
-            filter_fn: filter_fn,
+            filter_fn: filter_fn
         });
 
         unsafe {
@@ -249,7 +248,7 @@ impl Options {
                 mem::transmute(cb),
                 Some(compaction_filter::destructor_callback::<F>),
                 Some(filter_callback::<F>),
-                Some(compaction_filter::name_callback::<F>),
+                Some(compaction_filter::name_callback::<F>)
             );
             ffi::rocksdb_options_set_compaction_filter(self.inner, cf);
         }
@@ -264,7 +263,7 @@ impl Options {
     pub fn set_comparator(&mut self, name: &str, compare_fn: CompareFn) {
         let cb = Box::new(ComparatorCallback {
             name: CString::new(name.as_bytes()).unwrap(),
-            f: compare_fn,
+            f: compare_fn
         });
 
         unsafe {
@@ -272,7 +271,7 @@ impl Options {
                 mem::transmute(cb),
                 Some(comparator::destructor_callback),
                 Some(comparator::compare_callback),
-                Some(comparator::name_callback),
+                Some(comparator::name_callback)
             );
             ffi::rocksdb_options_set_comparator(self.inner, cmp);
         }
@@ -747,41 +746,41 @@ impl Options {
         }
     }
 
-    /// Measure IO stats in compactions and flushes, if `true`.
-    ///
-    /// Default: `false`
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use exonum_rocksdb::Options;
-    ///
-    /// let mut opts = Options::default();
-    /// opts.set_report_bg_io_stats(true);
-    /// ```
-    pub fn set_report_bg_io_stats(&mut self, enable: bool) {
-        unsafe {
-            ffi::rocksdb_options_set_report_bg_io_stats(self.inner, enable as c_int);
-        }
-    }
+    //    /// Measure IO stats in compactions and flushes, if `true`.
+    //    ///
+    //    /// Default: `false`
+    //    ///
+    //    /// # Example
+    //    ///
+    //    /// ```
+    //    /// use exonum_rocksdb::Options;
+    //    ///
+    //    /// let mut opts = Options::default();
+    //    /// opts.set_report_bg_io_stats(true);
+    //    /// ```
+    //    pub fn set_report_bg_io_stats(&mut self, enable: bool) {
+    //        unsafe {
+    //            ffi::rocksdb_options_set_report_bg_io_stats(self.inner, enable as c_int);
+    //        }
+    //    }
 
-    /// Recovery mode to control the consistency while replaying WAL.
-    ///
-    /// Default: DBRecoveryMode::PointInTime
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use exonum_rocksdb::{Options, DBRecoveryMode};
-    ///
-    /// let mut opts = Options::default();
-    /// opts.set_wal_recovery_mode(DBRecoveryMode::AbsoluteConsistency);
-    /// ```
-    pub fn set_wal_recovery_mode(&mut self, mode: DBRecoveryMode) {
-        unsafe {
-            ffi::rocksdb_options_set_wal_recovery_mode(self.inner, mode as c_int);
-        }
-    }
+    //    /// Recovery mode to control the consistency while replaying WAL.
+    //    ///
+    //    /// Default: DBRecoveryMode::PointInTime
+    //    ///
+    //    /// # Example
+    //    ///
+    //    /// ```
+    //    /// use exonum_rocksdb::{Options, DBRecoveryMode};
+    //    ///
+    //    /// let mut opts = Options::default();
+    //    /// opts.set_wal_recovery_mode(DBRecoveryMode::AbsoluteConsistency);
+    //    /// ```
+    //    pub fn set_wal_recovery_mode(&mut self, mode: DBRecoveryMode) {
+    //        unsafe {
+    //            ffi::rocksdb_options_set_wal_recovery_mode(self.inner, mode as c_int);
+    //        }
+    //    }
 
     pub fn enable_statistics(&mut self) {
         unsafe {

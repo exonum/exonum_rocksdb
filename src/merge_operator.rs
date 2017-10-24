@@ -68,7 +68,7 @@ pub type MergeFn = fn(&[u8], Option<&[u8]>, &mut MergeOperands) -> Vec<u8>;
 
 pub struct MergeOperatorCallback {
     pub name: CString,
-    pub merge_fn: MergeFn,
+    pub merge_fn: MergeFn
 }
 
 pub unsafe extern "C" fn destructor_callback(raw_cb: *mut c_void) {
@@ -136,7 +136,7 @@ pub struct MergeOperands {
     operands_list: *const *const c_char,
     operands_list_len: *const size_t,
     num_operands: usize,
-    cursor: usize,
+    cursor: usize
 }
 
 impl MergeOperands {
@@ -150,7 +150,7 @@ impl MergeOperands {
             operands_list: operands_list,
             operands_list_len: operands_list_len,
             num_operands: num_operands as usize,
-            cursor: 0,
+            cursor: 0
         }
     }
 }
@@ -173,7 +173,7 @@ impl<'a> Iterator for &'a mut MergeOperands {
                 self.cursor += 1;
                 Some(mem::transmute(slice::from_raw_parts(
                     *(ptr as *const *const u8) as *const u8,
-                    len,
+                    len
                 )))
             }
         }
