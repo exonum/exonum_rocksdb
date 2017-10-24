@@ -39,8 +39,8 @@ env:
   - CARGO_INCREMENTAL=1
   - RUSTFLAGS="-C link-dead-code"
   - CODECOV_TOKEN=90006bf6-e4b7-4825-b880-8d19c4e21c21
-  - ROCKSDB_LIB_DIR=$LD_LIBRARY_PATH
-  - SNAPPY_LIB_DIR=$LD_LIBRARY_PATH
+  - ROCKSDB_LIB_DIR=/usr/lib/x86_64-linux-gnu
+  - SNAPPY_LIB_DIR=/usr/lib/x86_64-linux-gnu
   matrix:
   - FEATURE=fmt
   - FEATURE=test-lib
