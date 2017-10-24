@@ -15,7 +15,6 @@
 
 
 use {DB, Error, Options, WriteOptions, ColumnFamily};
-use transaction_db::Transaction;
 use ffi;
 use ffi_util::opt_bytes_to_ptr;
 
@@ -225,14 +224,6 @@ pub enum IteratorMode<'a> {
 impl DBRawIterator {
     fn new(db: &DB, readopts: &ReadOptions) -> DBRawIterator {
         unsafe { DBRawIterator { inner: ffi::rocksdb_create_iterator(db.inner, readopts.inner) } }
-    }
-
-    pub fn new_txn(txn: &Transaction, readopts: &ReadOptions) -> DBRawIterator {
-        unsafe {
-            DBRawIterator {
-                inner: ffi::rocksdb_transaction_create_iterator(txn.inner, readopts.inner)
-            }
-        }
     }
 
     fn new_cf(
@@ -494,16 +485,6 @@ impl DBIterator {
     fn new(db: &DB, readopts: &ReadOptions, mode: IteratorMode) -> DBIterator {
         let mut rv = DBIterator {
             raw: DBRawIterator::new(db, readopts),
-            direction: Direction::Forward, // blown away by set_mode()
-            just_seeked: false
-        };
-        rv.set_mode(mode);
-        rv
-    }
-
-    pub fn new_txn(txn: &Transaction, readopts: &ReadOptions, mode: IteratorMode) -> DBIterator {
-        let mut rv = DBIterator {
-            raw: DBRawIterator::new_txn(txn, readopts),
             direction: Direction::Forward, // blown away by set_mode()
             just_seeked: false
         };

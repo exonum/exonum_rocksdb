@@ -51,15 +51,12 @@ pub mod merge_operator;
 pub mod compaction_filter;
 mod db;
 mod db_options;
-pub mod transaction_db;
 pub mod utils;
 
 pub use compaction_filter::Decision as CompactionDecision;
 pub use db::{DBCompactionStyle, DBCompressionType, DBIterator, DBRawIterator, DBRecoveryMode,
              DBVector, ReadOptions, Direction, IteratorMode, Snapshot, WriteBatch,
              new_bloom_filter};
-pub use transaction_db::{TransactionDB, TransactionDBOptions};
-pub use transaction_db::transaction::{Transaction, TransactionOptions};
 pub use merge_operator::MergeOperands;
 
 use std::sync::{Arc, RwLock};
