@@ -1,13 +1,19 @@
 Changelog
 =========
 
-0.7 (in development)
+0.7.1 (2017-11-17)
 ~~~~~~~~~~~~~~~~~~~~
+ * Added appveyor ci
+
+0.7 (2017-10-26)
+~~~~~~~~~~~~~~~~~~~~
+ * Updated version of RocksDB dependency
+ * Added possibility to create checkpoints
 
 0.6.1 (2017-03-13)
 ~~~~~~~~~~~~~~~~~~
 
-**New features**
+ **New features**
  * Support for raw iterator access (kaedroho)
 
 0.6 (2016-12-18)
