@@ -66,16 +66,19 @@ fn build_rocksdb() {
     if cfg!(windows) {
         link("rpcrt4", false);
         config.define("OS_WIN", Some("1"));
+        config.define("NOMINMAX", Some("1"));
 
         // Remove POSIX-specific sources
-        lib_sources = lib_sources
-            .iter()
+        lib_sources = lib_sources.iter()
             .cloned()
-            .filter(|file| match *file {
-                "port/port_posix.cc" |
-                "util/env_posix.cc" |
-                "util/io_posix.cc"  => false,
-                _ => true,
+            .filter(|file| {
+                match *file {
+                    "port/port_posix.cc" |
+                    "util/env_posix.cc" |
+                    "env/env_posix.cc" |
+                    "env/io_posix.cc" => false,
+                    _ => true,
+                }
             })
             .collect::<Vec<&'static str>>();
 
@@ -84,7 +87,9 @@ fn build_rocksdb() {
         lib_sources.push("port/win/env_win.cc");
         lib_sources.push("port/win/env_default.cc");
         lib_sources.push("port/win/win_logger.cc");
+        lib_sources.push("port/win/win_thread.cc");
         lib_sources.push("port/win/io_win.cc");
+        lib_sources.push("port/win/xpress_win.cc");
     }
 
     if cfg!(target_env = "msvc") {

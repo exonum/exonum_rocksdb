@@ -1313,7 +1313,7 @@ fn external() {
         let p = db.put(b"k1", b"v1111");
         assert!(p.is_ok());
         let r: Result<Option<DBVector>, Error> = db.get(b"k1");
-        assert!(r.unwrap().unwrap().to_utf8().unwrap() == "v1111");
+        assert_eq!(r.unwrap().unwrap().to_utf8().unwrap(), "v1111");
         assert!(db.delete(b"k1").is_ok());
         assert!(db.get(b"k1").unwrap().is_none());
     }
