@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.7.2 (2018-01-08)
+~~~~~~~~~~~~~~~~~~~~
+ * Replaced crate gcc with cc
+
 0.7.1 (2017-11-17)
 ~~~~~~~~~~~~~~~~~~~~
  * Added appveyor ci
