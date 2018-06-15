@@ -131,6 +131,7 @@ fn build_snappy() {
     build.compile("libsnappy.a");
 }
 
+/// Returns `true` if `library` was found, or `false` if it should be compiled.
 fn try_to_find_lib(library: &str) -> bool {
     use std::env;
 
@@ -140,10 +141,13 @@ fn try_to_find_lib(library: &str) -> bool {
         _ => "UNKNOWN"
     };
 
-    match env::var(format!("{}_BUILD", lib_name)).ok() {
-        None => return false,
-        Some(ref x) if x == "0" => return false,
-        _ => (),
+    let should_build = match env::var(format!("{}_BUILD", lib_name)).ok() {
+        None => false,
+        Some(ref x) if x == "0" => false,
+        _ => true,
+    };
+    if should_build {
+        return false;
     }
 
     if let Ok(lib_dir) = env::var(format!("{}_LIB_DIR", lib_name).as_str()) {
