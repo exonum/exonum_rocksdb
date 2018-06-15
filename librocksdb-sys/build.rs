@@ -140,6 +140,12 @@ fn try_to_find_lib(library: &str) -> bool {
         _ => "UNKNOWN"
     };
 
+    match env::var(format!("{}_BUILD", lib_name)).ok() {
+        None => return false,
+        Some(ref x) if x == "0" => return false,
+        _ => (),
+    }
+
     if let Ok(lib_dir) = env::var(format!("{}_LIB_DIR", lib_name).as_str()) {
         println!("cargo:rustc-link-search=native={}", lib_dir);
         let mode = match env::var_os(format!("{}_STATIC", lib_name).as_str()) {
@@ -150,11 +156,7 @@ fn try_to_find_lib(library: &str) -> bool {
         return true;
     }   
 
-   if probe_library(library).is_ok() {
-        true
-    } else {
-        false
-    }
+   probe_library(library).is_ok()
 }
 
 fn get_sources(git_path: &str, rev: &str) {
