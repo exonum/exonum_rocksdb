@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use ffi::{rocksdb_list_column_families, rocksdb_list_column_families_destroy};
 use Error;
 use Options;
-use ffi::{rocksdb_list_column_families, rocksdb_list_column_families_destroy};
 
 use libc::size_t;
 
@@ -25,12 +25,9 @@ use std::slice;
 pub fn to_cpath<P: AsRef<Path>>(path: P) -> Result<CString, Error> {
     match CString::new(path.as_ref().to_string_lossy().as_bytes()) {
         Ok(c) => Ok(c),
-        Err(_) => {
-            Err(Error::new(
-                "Failed to convert path to CString when opening DB."
-                    .to_owned()
-            ))
-        }
+        Err(_) => Err(Error::new(
+            "Failed to convert path to CString when opening DB.".to_owned(),
+        )),
     }
 }
 

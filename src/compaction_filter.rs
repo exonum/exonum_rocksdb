@@ -29,9 +29,8 @@ pub enum Decision {
     /// Remove the object from the database
     Remove,
     /// Change the value for the key
-    Change(&'static [u8])
+    Change(&'static [u8]),
 }
-
 
 /// Function to filter compaction with.
 ///
@@ -46,15 +45,14 @@ impl<F> CompactionFilterFn for F
 where
     F: FnMut(u32, &[u8], &[u8]) -> Decision,
     F: Send + 'static,
-{
-}
+{}
 
 pub struct CompactionFilterCallback<F>
 where
     F: CompactionFilterFn,
 {
     pub name: CString,
-    pub filter_fn: F
+    pub filter_fn: F,
 }
 
 pub unsafe extern "C" fn destructor_callback<F>(raw_cb: *mut c_void)
@@ -117,8 +115,8 @@ fn test_filter(level: u32, key: &[u8], value: &[u8]) -> Decision {
 
 #[test]
 fn compaction_filter_test() {
-    use {DB, Options};
     use tempdir::TempDir;
+    use {Options, DB};
 
     let temp_dir = TempDir::new("_rust_rocksdb_filtertest").unwrap();
     let mut opts = Options::default();
@@ -138,5 +136,4 @@ fn compaction_filter_test() {
             Err(e) => println!("error destroing db {}", e),
         }
     }
-
 }

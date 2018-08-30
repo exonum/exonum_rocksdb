@@ -38,34 +38,33 @@
 //! ```
 //!
 
-extern crate libc;
 extern crate exonum_librocksdb_sys as ffi;
+extern crate libc;
 extern crate tempdir;
 
 #[macro_use]
 mod ffi_util;
 
 pub mod backup;
-mod comparator;
-pub mod merge_operator;
 pub mod compaction_filter;
+mod comparator;
 mod db;
 mod db_options;
+pub mod merge_operator;
 pub mod utils;
 
 pub use compaction_filter::Decision as CompactionDecision;
-pub use db::{DBCompactionStyle, DBCompressionType, DBIterator, DBRawIterator, DBRecoveryMode,
-             DBVector, ReadOptions, Direction, IteratorMode, Snapshot, WriteBatch,
-             new_bloom_filter};
+pub use db::{
+    new_bloom_filter, DBCompactionStyle, DBCompressionType, DBIterator, DBRawIterator,
+    DBRecoveryMode, DBVector, Direction, IteratorMode, ReadOptions, Snapshot, WriteBatch,
+};
 pub use merge_operator::MergeOperands;
 
-use std::sync::{Arc, RwLock};
 use std::collections::BTreeMap;
 use std::error;
 use std::fmt;
 use std::path::PathBuf;
-
-
+use std::sync::{Arc, RwLock};
 
 /// A `RocksDB` database.
 ///
@@ -73,14 +72,14 @@ use std::path::PathBuf;
 pub struct DB {
     inner: *mut ffi::rocksdb_t,
     cfs: Arc<RwLock<BTreeMap<String, ColumnFamily>>>,
-    path: PathBuf
+    path: PathBuf,
 }
 
 /// A simple wrapper round a string, used for errors reported from
 /// ffi calls.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Error {
-    message: String
+    message: String,
 }
 
 impl Error {
@@ -119,7 +118,7 @@ impl fmt::Display for Error {
 
 /// For configuring block-based file storage.
 pub struct BlockBasedOptions {
-    inner: *mut ffi::rocksdb_block_based_table_options_t
+    inner: *mut ffi::rocksdb_block_based_table_options_t,
 }
 
 /// Database-wide options around performance and behavior.
@@ -158,7 +157,7 @@ pub struct BlockBasedOptions {
 /// }
 /// ```
 pub struct Options {
-    inner: *mut ffi::rocksdb_options_t
+    inner: *mut ffi::rocksdb_options_t,
 }
 
 /// Optionally disable WAL or sync for this write.
@@ -191,12 +190,12 @@ pub struct Options {
 /// # }
 /// ```
 pub struct WriteOptions {
-    inner: *mut ffi::rocksdb_writeoptions_t
+    inner: *mut ffi::rocksdb_writeoptions_t,
 }
 
 /// An opaque type used to represent a column family. Returned from some functions, and used
 /// in others
 #[derive(Copy, Clone)]
 pub struct ColumnFamily {
-    inner: *mut ffi::rocksdb_column_family_handle_t
+    inner: *mut ffi::rocksdb_column_family_handle_t,
 }

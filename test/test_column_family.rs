@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-use exonum_rocksdb::{DB, MergeOperands, Options};
+use exonum_rocksdb::{MergeOperands, Options, DB};
 use tempdir::TempDir;
 
 #[test]
@@ -41,19 +41,15 @@ pub fn test_column_family() {
         let mut opts = Options::default();
         opts.set_merge_operator("test operator", test_provided_merge);
         match DB::open(&opts, path) {
-            Ok(_) => {
-                panic!(
-                    "should not have opened DB successfully without \
+            Ok(_) => panic!(
+                "should not have opened DB successfully without \
                         specifying column
             families"
-                )
-            }
-            Err(e) => {
-                assert!(e.to_string().starts_with(
-                    "Invalid argument: You have to open all \
-                                  column families."
-                ))
-            }
+            ),
+            Err(e) => assert!(e.to_string().starts_with(
+                "Invalid argument: You have to open all \
+                 column families."
+            )),
         }
     }
 
@@ -114,12 +110,10 @@ fn test_merge_operator() {
         println!("m is {:?}", m);
         // TODO assert!(m.is_ok());
         match db.get(b"k1") {
-            Ok(Some(value)) => {
-                match value.to_utf8() {
-                    Some(v) => println!("retrieved utf8 value: {}", v),
-                    None => println!("did not read valid utf-8 out of the db"),
-                }
-            }
+            Ok(Some(value)) => match value.to_utf8() {
+                Some(v) => println!("retrieved utf8 value: {}", v),
+                None => println!("did not read valid utf-8 out of the db"),
+            },
             Err(_) => println!("error reading value"),
             _ => panic!("value not present!"),
         }
@@ -129,7 +123,6 @@ fn test_merge_operator() {
         assert!(db.delete(b"k1").is_ok());
         assert!(db.get(b"k1").unwrap().is_none());
     }
-
 }
 
 fn test_provided_merge(

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-use exonum_rocksdb::{DB, Options};
+use exonum_rocksdb::{Options, DB};
 use std::sync::Arc;
 use std::thread;
 use tempdir::TempDir;
@@ -31,25 +31,31 @@ pub fn test_multithreaded() {
         db.put(b"key", b"value1").unwrap();
 
         let db1 = Arc::clone(&db);
-        let j1 = thread::spawn(move || for _ in 1..N {
-            db1.put(b"key", b"value1").unwrap();
+        let j1 = thread::spawn(move || {
+            for _ in 1..N {
+                db1.put(b"key", b"value1").unwrap();
+            }
         });
 
         let db2 = Arc::clone(&db);
-        let j2 = thread::spawn(move || for _ in 1..N {
-            db2.put(b"key", b"value2").unwrap();
+        let j2 = thread::spawn(move || {
+            for _ in 1..N {
+                db2.put(b"key", b"value2").unwrap();
+            }
         });
 
         let db3 = Arc::clone(&db);
-        let j3 = thread::spawn(move || for _ in 1..N {
-            match db3.get(b"key") {
-                Ok(Some(v)) => {
-                    if &v[..] != b"value1" && &v[..] != b"value2" {
+        let j3 = thread::spawn(move || {
+            for _ in 1..N {
+                match db3.get(b"key") {
+                    Ok(Some(v)) => {
+                        if &v[..] != b"value1" && &v[..] != b"value2" {
+                            assert!(false);
+                        }
+                    }
+                    _ => {
                         assert!(false);
                     }
-                }
-                _ => {
-                    assert!(false);
                 }
             }
         });
