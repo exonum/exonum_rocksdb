@@ -4,9 +4,12 @@
 ## Operating System (VM environment) ##
 
 # Rust needs at least Visual Studio 2013 Appveyor OS for MSVC targets.
-os: Visual Studio 2015
-
+image:
+  - Visual Studio 2015
+  - Visual Studio 2017
 ## Build Matrix ##
+
+skip_tags: true
 
 # This configuration will setup a build for each channel & target combination (12 windows
 # combinations in all).
