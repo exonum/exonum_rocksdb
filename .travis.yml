@@ -44,24 +44,21 @@ env:
   - FEATURE=test-lib
   - FEATURE=test-doc
 
-install:
-- |
+install: |
   case "$FEATURE" in
-  clippy )
+  "clippy" )
     cargo clippy --version || rustup component add clippy-preview --toolchain=nightly
   ;;
-  esac
-- |
-  if [[ "$FEATURE" == "fmt" ]]; then
+  "fmt" )
     cargo-audit -V || cargo install cargo-audit --force
-    rustfmt -V || rustup component add rustfmt-preview
-    cargo update
-    fi
-- cargo install --list
+    rustup component add rustfmt-preview
+    rustfmt -V
+  ;;
+  esac
 script: |
   case "$FEATURE" in
   "fmt" )
-      cargo audit && cargo fmt -- --write-mode=diff
+      cargo audit && cargo fmt -- --write-mode=check
   ;;
   "clippy" )
       cargo clippy -- -D warnings
