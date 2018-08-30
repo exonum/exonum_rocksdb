@@ -202,7 +202,7 @@ impl Options {
     pub fn set_merge_operator(&mut self, name: &str, merge_fn: MergeFn) {
         let cb = Box::new(MergeOperatorCallback {
             name: CString::new(name.as_bytes()).unwrap(),
-            merge_fn: merge_fn
+            merge_fn
         });
 
         unsafe {
@@ -240,7 +240,7 @@ impl Options {
     {
         let cb = Box::new(CompactionFilterCallback {
             name: CString::new(name.as_bytes()).unwrap(),
-            filter_fn: filter_fn
+            filter_fn
         });
 
         unsafe {

@@ -147,8 +147,8 @@ impl MergeOperands {
     ) -> MergeOperands {
         assert!(num_operands >= 0);
         MergeOperands {
-            operands_list: operands_list,
-            operands_list_len: operands_list_len,
+            operands_list,
+            operands_list_len,
             num_operands: num_operands as usize,
             cursor: 0
         }

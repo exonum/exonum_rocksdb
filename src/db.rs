@@ -571,7 +571,7 @@ impl<'a> Snapshot<'a> {
     pub fn new(db: &DB) -> Snapshot {
         let snapshot = unsafe { ffi::rocksdb_create_snapshot(db.inner) };
         Snapshot {
-            db: db,
+            db,
             inner: snapshot
         }
     }
@@ -750,7 +750,7 @@ impl DB {
         Ok(())
     }
 
-    pub fn repair<P: AsRef<Path>>(opts: Options, path: P) -> Result<(), Error> {
+    pub fn repair<P: AsRef<Path>>(opts: &Options, path: P) -> Result<(), Error> {
         let cpath = CString::new(path.as_ref().to_string_lossy().as_bytes()).unwrap();
         unsafe {
             ffi_try!(ffi::rocksdb_repair_db(opts.inner, cpath.as_ptr()));
@@ -762,6 +762,7 @@ impl DB {
         self.path.as_path()
     }
 
+    #[cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value))]
     pub fn write_opt(&self, batch: WriteBatch, writeopts: &WriteOptions) -> Result<(), Error> {
         unsafe {
             ffi_try!(ffi::rocksdb_write(self.inner, writeopts.inner, batch.inner));
