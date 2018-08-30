@@ -59,7 +59,7 @@ install: |
 script: |
   case "$FEATURE" in
   "fmt" )
-      cargo audit && cargo fmt -- --write-mode=check
+      cargo audit && cargo fmt --all -- --check
   ;;
   "clippy" )
       cargo clippy -- -D warnings
