@@ -53,6 +53,7 @@ install: |
     cargo-audit -V || cargo install cargo-audit --force
     rustup component add rustfmt-preview
     rustfmt -V
+    cargo update
   ;;
   esac
 script: |
