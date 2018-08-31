@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-use exonum_rocksdb::{DB, Options};
+use exonum_rocksdb::{Options, DB};
 use tempdir::TempDir;
 
 #[test]

@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-
 use libc::{c_char, c_int, c_void, size_t};
 use std::cmp::Ordering;
 use std::ffi::CString;
@@ -24,7 +23,7 @@ pub type CompareFn = fn(&[u8], &[u8]) -> Ordering;
 
 pub struct ComparatorCallback {
     pub name: CString,
-    pub f: CompareFn
+    pub f: CompareFn,
 }
 
 pub unsafe extern "C" fn destructor_callback(raw_cb: *mut c_void) {

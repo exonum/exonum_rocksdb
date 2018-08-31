@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-
 use ffi;
 use libc::{c_char, c_void};
 use std::ffi::CStr;

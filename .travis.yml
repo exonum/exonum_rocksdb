@@ -20,7 +20,7 @@ rust:
   - stable
 matrix:
   include:
-    - rust: nightly-2017-10-03
+    - rust: nightly
       env: FEATURE=clippy
 
 cache:
@@ -34,8 +34,6 @@ sudo: required
 
 env:
   global:
-  - RUSTFMT_VERS=0.9.0
-  - CLIPPY_VERS=0.0.165
   - CARGO_INCREMENTAL=1
   - RUSTFLAGS="-C link-dead-code"
   - CODECOV_TOKEN=90006bf6-e4b7-4825-b880-8d19c4e21c21
@@ -46,24 +44,22 @@ env:
   - FEATURE=test-lib
   - FEATURE=test-doc
 
-install:
-- |
+install: |
   case "$FEATURE" in
-  clippy )
-    cargo clippy --version | grep $CLIPPY_VERS || cargo install clippy --force --vers $CLIPPY_VERS
+  "clippy" )
+    cargo clippy --version || rustup component add clippy-preview --toolchain=nightly
+  ;;
+  "fmt" )
+    cargo-audit -V || cargo install cargo-audit --force
+    rustup component add rustfmt-preview
+    rustfmt -V
+    cargo update
   ;;
   esac
-- |
-  if [[ "$FEATURE" == "fmt" ]]; then
-    cargo-audit -V || cargo install cargo-audit --force
-    rustfmt -V | grep $RUSTFMT_VERS || cargo install rustfmt --vers $RUSTFMT_VERS --force
-    cargo update
-    fi
-- cargo install --list
 script: |
   case "$FEATURE" in
   "fmt" )
-      cargo audit && cargo fmt -- --write-mode=diff
+      cargo audit && cargo fmt --all -- --check
   ;;
   "clippy" )
       cargo clippy -- -D warnings

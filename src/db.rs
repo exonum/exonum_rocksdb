@@ -13,14 +13,12 @@
 // limitations under the License.
 //
 
-
-use {DB, Error, Options, WriteOptions, ColumnFamily};
 use ffi;
 use ffi_util::opt_bytes_to_ptr;
+use {ColumnFamily, Error, Options, WriteOptions, DB};
 
 use libc::{c_char, c_int, c_uchar, c_void, size_t};
 
-use std::sync::{Arc, RwLock};
 use std::collections::BTreeMap;
 use std::ffi::CString;
 use std::fmt;
@@ -30,7 +28,7 @@ use std::path::Path;
 use std::ptr;
 use std::slice;
 use std::str;
-
+use std::sync::{Arc, RwLock};
 
 pub fn new_bloom_filter(bits: c_int) -> *mut ffi::rocksdb_filterpolicy_t {
     unsafe { ffi::rocksdb_filterpolicy_create_bloom(bits) }
@@ -43,7 +41,6 @@ pub trait Inner {
     fn get_inner(&self) -> *const ffi::rocksdb_snapshot_t;
 }
 
-
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum DBCompressionType {
     None = ffi::rocksdb_no_compression as isize,
@@ -51,14 +48,14 @@ pub enum DBCompressionType {
     Zlib = ffi::rocksdb_zlib_compression as isize,
     Bz2 = ffi::rocksdb_bz2_compression as isize,
     Lz4 = ffi::rocksdb_lz4_compression as isize,
-    Lz4hc = ffi::rocksdb_lz4hc_compression as isize
+    Lz4hc = ffi::rocksdb_lz4hc_compression as isize,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum DBCompactionStyle {
     Level = ffi::rocksdb_level_compaction as isize,
     Universal = ffi::rocksdb_universal_compaction as isize,
-    Fifo = ffi::rocksdb_fifo_compaction as isize
+    Fifo = ffi::rocksdb_fifo_compaction as isize,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -93,11 +90,11 @@ pub enum DBRecoveryMode {
 /// # }
 /// ```
 pub struct WriteBatch {
-    inner: *mut ffi::rocksdb_writebatch_t
+    inner: *mut ffi::rocksdb_writebatch_t,
 }
 
 pub struct ReadOptions {
-    pub inner: *mut ffi::rocksdb_readoptions_t
+    pub inner: *mut ffi::rocksdb_readoptions_t,
 }
 
 /// A consistent view of the database at the point of creation.
@@ -119,7 +116,7 @@ pub struct ReadOptions {
 ///
 pub struct Snapshot<'a> {
     db: &'a DB,
-    inner: *const ffi::rocksdb_snapshot_t
+    inner: *const ffi::rocksdb_snapshot_t,
 }
 
 /// An iterator over a database or column family, with specifiable
@@ -165,9 +162,8 @@ pub struct Snapshot<'a> {
 /// # }
 /// ```
 pub struct DBRawIterator {
-    inner: *mut ffi::rocksdb_iterator_t
+    inner: *mut ffi::rocksdb_iterator_t,
 }
-
 
 /// An iterator over a database or column family, with specifiable
 /// ranges and direction.
@@ -206,12 +202,12 @@ pub struct DBRawIterator {
 pub struct DBIterator {
     raw: DBRawIterator,
     direction: Direction,
-    just_seeked: bool
+    just_seeked: bool,
 }
 
 pub enum Direction {
     Forward,
-    Reverse
+    Reverse,
 }
 
 pub type KVBytes = (Box<[u8]>, Box<[u8]>);
@@ -219,12 +215,16 @@ pub type KVBytes = (Box<[u8]>, Box<[u8]>);
 pub enum IteratorMode<'a> {
     Start,
     End,
-    From(&'a [u8], Direction)
+    From(&'a [u8], Direction),
 }
 
 impl DBRawIterator {
     fn new(db: &DB, readopts: &ReadOptions) -> DBRawIterator {
-        unsafe { DBRawIterator { inner: ffi::rocksdb_create_iterator(db.inner, readopts.inner) } }
+        unsafe {
+            DBRawIterator {
+                inner: ffi::rocksdb_create_iterator(db.inner, readopts.inner),
+            }
+        }
     }
 
     fn new_cf(
@@ -234,7 +234,7 @@ impl DBRawIterator {
     ) -> Result<DBRawIterator, Error> {
         unsafe {
             Ok(DBRawIterator {
-                inner: ffi::rocksdb_create_iterator_cf(db.inner, readopts.inner, cf_handle.inner)
+                inner: ffi::rocksdb_create_iterator_cf(db.inner, readopts.inner, cf_handle.inner),
             })
         }
     }
@@ -365,7 +365,7 @@ impl DBRawIterator {
             ffi::rocksdb_iter_seek(
                 self.inner,
                 key.as_ptr() as *const c_char,
-                key.len() as size_t
+                key.len() as size_t,
             );
         }
     }
@@ -488,7 +488,7 @@ impl DBIterator {
         let mut rv = DBIterator {
             raw: DBRawIterator::new(db, readopts),
             direction: Direction::Forward, // blown away by set_mode()
-            just_seeked: false
+            just_seeked: false,
         };
         rv.set_mode(mode);
         rv
@@ -503,7 +503,7 @@ impl DBIterator {
         let mut rv = DBIterator {
             raw: try!(DBRawIterator::new_cf(db, cf_handle, readopts)),
             direction: Direction::Forward, // blown away by set_mode()
-            just_seeked: false
+            just_seeked: false,
         };
         rv.set_mode(mode);
         Ok(rv)
@@ -553,7 +553,7 @@ impl Iterator for DBIterator {
             // .key() and .value() only ever return None if valid == false, which we've just cheked
             Some((
                 self.raw.key().unwrap().into_boxed_slice(),
-                self.raw.value().unwrap().into_boxed_slice()
+                self.raw.value().unwrap().into_boxed_slice(),
             ))
         } else {
             None
@@ -571,8 +571,8 @@ impl<'a> Snapshot<'a> {
     pub fn new(db: &DB) -> Snapshot {
         let snapshot = unsafe { ffi::rocksdb_create_snapshot(db.inner) };
         Snapshot {
-            db: db,
-            inner: snapshot
+            db,
+            inner: snapshot,
         }
     }
 
@@ -658,16 +658,17 @@ impl DB {
             Err(_) => {
                 return Err(Error::new(
                     "Failed to convert path to CString \
-                                       when opening DB."
-                        .to_owned()
+                     when opening DB."
+                        .to_owned(),
                 ))
             }
         };
 
         if let Err(e) = fs::create_dir_all(&path) {
-            return Err(Error::new(
-                format!("Failed to create RocksDB directory: `{:?}`.", e)
-            ));
+            return Err(Error::new(format!(
+                "Failed to create RocksDB directory: `{:?}`.",
+                e
+            )));
         }
 
         let db: *mut ffi::rocksdb_t;
@@ -717,17 +718,17 @@ impl DB {
                 if handle.is_null() {
                     return Err(Error::new(
                         "Received null column family \
-                                           handle from DB."
-                            .to_owned()
+                         handle from DB."
+                            .to_owned(),
                     ));
                 }
             }
 
             for (n, h) in cfs_v.iter().zip(cfhandles) {
-                cf_map.write().unwrap().insert(
-                    n.to_string(),
-                    ColumnFamily { inner: h }
-                );
+                cf_map
+                    .write()
+                    .unwrap()
+                    .insert(n.to_string(), ColumnFamily { inner: h });
             }
         }
 
@@ -738,7 +739,7 @@ impl DB {
         Ok(DB {
             inner: db,
             cfs: cf_map,
-            path: path.to_path_buf()
+            path: path.to_path_buf(),
         })
     }
 
@@ -750,7 +751,7 @@ impl DB {
         Ok(())
     }
 
-    pub fn repair<P: AsRef<Path>>(opts: Options, path: P) -> Result<(), Error> {
+    pub fn repair<P: AsRef<Path>>(opts: &Options, path: P) -> Result<(), Error> {
         let cpath = CString::new(path.as_ref().to_string_lossy().as_bytes()).unwrap();
         unsafe {
             ffi_try!(ffi::rocksdb_repair_db(opts.inner, cpath.as_ptr()));
@@ -762,6 +763,7 @@ impl DB {
         self.path.as_path()
     }
 
+    #[cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value))]
     pub fn write_opt(&self, batch: WriteBatch, writeopts: &WriteOptions) -> Result<(), Error> {
         unsafe {
             ffi_try!(ffi::rocksdb_write(self.inner, writeopts.inner, batch.inner));
@@ -783,11 +785,11 @@ impl DB {
         if readopts.inner.is_null() {
             return Err(Error::new(
                 "Unable to create RocksDB read options. \
-                                   This is a fairly trivial call, and its \
-                                   failure may be indicative of a \
-                                   mis-compiled or mis-loaded RocksDB \
-                                   library."
-                    .to_owned()
+                 This is a fairly trivial call, and its \
+                 failure may be indicative of a \
+                 mis-compiled or mis-loaded RocksDB \
+                 library."
+                    .to_owned(),
             ));
         }
 
@@ -822,11 +824,11 @@ impl DB {
         if readopts.inner.is_null() {
             return Err(Error::new(
                 "Unable to create RocksDB read options. \
-                                   This is a fairly trivial call, and its \
-                                   failure may be indicative of a \
-                                   mis-compiled or mis-loaded RocksDB \
-                                   library."
-                    .to_owned()
+                 This is a fairly trivial call, and its \
+                 failure may be indicative of a \
+                 mis-compiled or mis-loaded RocksDB \
+                 library."
+                    .to_owned(),
             ));
         }
 
@@ -858,8 +860,8 @@ impl DB {
             Err(_) => {
                 return Err(Error::new(
                     "Failed to convert path to CString \
-                                       when opening rocksdb"
-                        .to_owned()
+                     when opening rocksdb"
+                        .to_owned(),
                 ))
             }
         };
@@ -884,7 +886,7 @@ impl DB {
             Ok(())
         } else {
             Err(Error::new(
-                format!("Invalid column family: {}", name).to_owned()
+                format!("Invalid column family: {}", name).to_owned(),
             ))
         }
     }
@@ -1058,7 +1060,7 @@ impl DB {
                 opt_bytes_to_ptr(start),
                 start.map_or(0, |s| s.len()) as size_t,
                 opt_bytes_to_ptr(end),
-                end.map_or(0, |e| e.len()) as size_t
+                end.map_or(0, |e| e.len()) as size_t,
             );
         }
     }
@@ -1071,7 +1073,7 @@ impl DB {
                 opt_bytes_to_ptr(start),
                 start.map_or(0, |s| s.len()) as size_t,
                 opt_bytes_to_ptr(end),
-                end.map_or(0, |e| e.len()) as size_t
+                end.map_or(0, |e| e.len()) as size_t,
             );
         }
     }
@@ -1094,7 +1096,7 @@ impl WriteBatch {
                 key.as_ptr() as *const c_char,
                 key.len() as size_t,
                 value.as_ptr() as *const c_char,
-                value.len() as size_t
+                value.len() as size_t,
             );
             Ok(())
         }
@@ -1108,7 +1110,7 @@ impl WriteBatch {
                 key.as_ptr() as *const c_char,
                 key.len() as size_t,
                 value.as_ptr() as *const c_char,
-                value.len() as size_t
+                value.len() as size_t,
             );
             Ok(())
         }
@@ -1121,7 +1123,7 @@ impl WriteBatch {
                 key.as_ptr() as *const c_char,
                 key.len() as size_t,
                 value.as_ptr() as *const c_char,
-                value.len() as size_t
+                value.len() as size_t,
             );
             Ok(())
         }
@@ -1135,7 +1137,7 @@ impl WriteBatch {
                 key.as_ptr() as *const c_char,
                 key.len() as size_t,
                 value.as_ptr() as *const c_char,
-                value.len() as size_t
+                value.len() as size_t,
             );
             Ok(())
         }
@@ -1149,7 +1151,7 @@ impl WriteBatch {
             ffi::rocksdb_writebatch_delete(
                 self.inner,
                 key.as_ptr() as *const c_char,
-                key.len() as size_t
+                key.len() as size_t,
             );
             Ok(())
         }
@@ -1161,7 +1163,7 @@ impl WriteBatch {
                 self.inner,
                 cf.inner,
                 key.as_ptr() as *const c_char,
-                key.len() as size_t
+                key.len() as size_t,
             );
             Ok(())
         }
@@ -1170,7 +1172,9 @@ impl WriteBatch {
 
 impl Default for WriteBatch {
     fn default() -> WriteBatch {
-        WriteBatch { inner: unsafe { ffi::rocksdb_writebatch_create() } }
+        WriteBatch {
+            inner: unsafe { ffi::rocksdb_writebatch_create() },
+        }
     }
 }
 
@@ -1225,7 +1229,7 @@ impl ReadOptions {
             ffi::rocksdb_readoptions_set_iterate_upper_bound(
                 self.inner,
                 key.as_ptr() as *const c_char,
-                key.len() as size_t
+                key.len() as size_t,
             );
         }
     }
@@ -1233,7 +1237,11 @@ impl ReadOptions {
 
 impl Default for ReadOptions {
     fn default() -> ReadOptions {
-        unsafe { ReadOptions { inner: ffi::rocksdb_readoptions_create() } }
+        unsafe {
+            ReadOptions {
+                inner: ffi::rocksdb_readoptions_create(),
+            }
+        }
     }
 }
 
@@ -1244,7 +1252,7 @@ impl Default for ReadOptions {
 /// a slice.
 pub struct DBVector {
     base: *mut u8,
-    len: usize
+    len: usize,
 }
 
 impl Deref for DBVector {
@@ -1281,7 +1289,7 @@ impl DBVector {
     pub unsafe fn from_c(val: *mut u8, val_len: size_t) -> DBVector {
         DBVector {
             base: val,
-            len: val_len as usize
+            len: val_len as usize,
         }
     }
 
@@ -1295,15 +1303,14 @@ impl DBVector {
 
 #[test]
 fn test_db_vector() {
-    use std::mem;
     use libc::calloc;
+    use std::mem;
     let len: size_t = 4;
     let data: *mut u8 = unsafe { mem::transmute(calloc(len, mem::size_of::<u8>())) };
     let v = unsafe { DBVector::from_c(data, len) };
     let ctrl = [0u8, 0, 0, 0];
     assert_eq!(&*v, &ctrl[..]);
 }
-
 
 #[test]
 fn external() {

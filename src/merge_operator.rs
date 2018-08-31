@@ -68,7 +68,7 @@ pub type MergeFn = fn(&[u8], Option<&[u8]>, &mut MergeOperands) -> Vec<u8>;
 
 pub struct MergeOperatorCallback {
     pub name: CString,
-    pub merge_fn: MergeFn
+    pub merge_fn: MergeFn,
 }
 
 pub unsafe extern "C" fn destructor_callback(raw_cb: *mut c_void) {
@@ -131,12 +131,11 @@ pub unsafe extern "C" fn partial_merge_callback(
     buf as *mut c_char
 }
 
-
 pub struct MergeOperands {
     operands_list: *const *const c_char,
     operands_list_len: *const size_t,
     num_operands: usize,
-    cursor: usize
+    cursor: usize,
 }
 
 impl MergeOperands {
@@ -147,10 +146,10 @@ impl MergeOperands {
     ) -> MergeOperands {
         assert!(num_operands >= 0);
         MergeOperands {
-            operands_list: operands_list,
-            operands_list_len: operands_list_len,
+            operands_list,
+            operands_list_len,
             num_operands: num_operands as usize,
-            cursor: 0
+            cursor: 0,
         }
     }
 }
@@ -173,7 +172,7 @@ impl<'a> Iterator for &'a mut MergeOperands {
                 self.cursor += 1;
                 Some(mem::transmute(slice::from_raw_parts(
                     *(ptr as *const *const u8) as *const u8,
-                    len
+                    len,
                 )))
             }
         }
@@ -209,7 +208,7 @@ fn test_provided_merge(
 
 #[test]
 fn mergetest() {
-    use {DB, Options};
+    use {Options, DB};
 
     let path = "_rust_rocksdb_mergetest";
     let mut opts = Options::default();
@@ -226,12 +225,10 @@ fn mergetest() {
         let m = db.merge(b"k1", b"h");
         assert!(m.is_ok());
         match db.get(b"k1") {
-            Ok(Some(value)) => {
-                match value.to_utf8() {
-                    Some(v) => println!("retrieved utf8 value: {}", v),
-                    None => println!("did not read valid utf-8 out of the db"),
-                }
-            }
+            Ok(Some(value)) => match value.to_utf8() {
+                Some(v) => println!("retrieved utf8 value: {}", v),
+                None => println!("did not read valid utf-8 out of the db"),
+            },
             Err(_) => println!("error reading value"),
             _ => panic!("value not present"),
         }

@@ -4,9 +4,12 @@
 ## Operating System (VM environment) ##
 
 # Rust needs at least Visual Studio 2013 Appveyor OS for MSVC targets.
-os: Visual Studio 2015
-
+image: Visual Studio 2017
+#  - Visual Studio 2015
+#  - Visual Studio 2017
 ## Build Matrix ##
+
+skip_tags: true
 
 # This configuration will setup a build for each channel & target combination (12 windows
 # combinations in all).
@@ -43,12 +46,12 @@ environment:
   # Stable 32-bit MSVC
     - channel: stable
       target: i686-pc-windows-msvc
-  # Beta 64-bit MSVC
-    - channel: beta
-      target: x86_64-pc-windows-msvc
-  # Beta 32-bit MSVC
-    - channel: beta
-      target: i686-pc-windows-msvc
+#  # Beta 64-bit MSVC
+#    - channel: beta
+#      target: x86_64-pc-windows-msvc
+#  # Beta 32-bit MSVC
+#    - channel: beta
+#      target: i686-pc-windows-msvc
 
 # Only build against the branches that will have pull requests built against them (master).
 # Otherwise creating feature branches on this repository and a pull requests against them will
