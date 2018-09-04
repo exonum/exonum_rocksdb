@@ -3,7 +3,7 @@ extern crate pkg_config;
 
 use pkg_config::probe_library;
 use std::env::var;
-use std::fs::read_dir;
+use std::fs::{create_dir, remove_dir_all};
 use std::process::Command;
 
 fn link(name: &str, bundled: bool) {
@@ -163,68 +163,56 @@ fn try_to_find_lib(library: &str) -> bool {
     probe_library(library).is_ok()
 }
 
-fn get_sources(git_path: &str, rev: &str) {
-    let mut command = Command::new("git");
-    let mut command_result = command
-        .arg("clone")
-        .arg(git_path)
-        .output()
-        .unwrap_or_else(|error| {
-            panic!("Failed to run git command: {}", error);
-        });
-    if !command_result.status.success() {
-        panic!(
-            "{:?}\n{}\n{}\n",
-            command,
-            String::from_utf8_lossy(&command_result.stdout),
-            String::from_utf8_lossy(&command_result.stderr)
-        );
+fn get_local_src_if(name: &str, repo: &str, sha: &str) {
+    let is_to_pull = Command::new("git").arg("rev-parse")
+                                        .arg("HEAD")
+                                        .current_dir(name)
+                                        .output()
+                                        .map(|output| {
+                                            let curren_head = std::str::from_utf8(&output.stdout).expect("UTF-8 output").trim();
+                                            //Assume that if sha is different, we were not able
+                                            //to finish clone/checkout
+                                            curren_head != sha
+                                        })
+                                        .unwrap_or(true);
+
+    if !is_to_pull {
+        return;
     }
 
-    command = Command::new("git");
+    let _ = remove_dir_all(name);
+    create_dir(name).expect("To create dir");
 
-    if git_path.contains("snappy") {
-        command.current_dir("snappy");
-    } else {
-        command.current_dir("rocksdb");
-    }
+    Command::new("git").arg("clone")
+                       .arg(repo)
+                       .arg(".")
+                       .current_dir(name)
+                       .status()
+                       .map(|status| match status.success() {
+                           true => (),
+                           false => panic!("Git: Unable to clone repo")
+                       })
+                       .expect("Failed to run clone command");
 
-    command_result = command
-        .arg("checkout")
-        .arg(rev)
-        .output()
-        .unwrap_or_else(|error| {
-            panic!("Failed to run git command: {}", error);
-        });
-
-    if !command_result.status.success() {
-        panic!(
-            "{:?}\n{}\n{}\n",
-            command,
-            String::from_utf8_lossy(&command_result.stdout),
-            String::from_utf8_lossy(&command_result.stderr)
-        );
-    }
+    Command::new("git").arg("checkout")
+                       .arg(sha)
+                       .current_dir(name)
+                       .output()
+                       .map(|output| match output.status.success() {
+                           true => (),
+                           false => panic!("Git: Unable to checkout repo: {}", String::from_utf8_lossy(&output.stderr)),
+                       })
+                       .expect("Failed to run checkout command");
 }
 
 fn main() {
     if !try_to_find_lib("libsnappy") {
-        if read_dir("snappy").is_err() {
-            get_sources(
-                "https://github.com/google/snappy.git",
-                "513df5fb5a2d51146f409141f9eb8736935cc486",
-            );
-        }
+        get_local_src_if("snappy", "https://github.com/google/snappy.git", "513df5fb5a2d51146f409141f9eb8736935cc486");
         build_snappy();
     }
 
     if !try_to_find_lib("librocksdb") {
-        if read_dir("rocksdb").is_err() {
-            get_sources(
-                "https://github.com/facebook/rocksdb.git",
-                "d310e0f33977d4e297bf25a98eef79d1a02513d7",
-            );
-        }
+        get_local_src_if("rocksdb", "https://github.com/facebook/rocksdb.git", "d310e0f33977d4e297bf25a98eef79d1a02513d7");
         build_rocksdb();
     }
 }
