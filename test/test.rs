@@ -16,6 +16,7 @@
 extern crate exonum_rocksdb;
 extern crate tempdir;
 
+mod test_checkpoint;
 mod test_column_family;
 mod test_iterator;
 mod test_multithreaded;

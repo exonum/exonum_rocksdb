@@ -46,6 +46,7 @@ extern crate tempdir;
 mod ffi_util;
 
 pub mod backup;
+pub mod checkpoint;
 pub mod compaction_filter;
 mod comparator;
 mod db;
