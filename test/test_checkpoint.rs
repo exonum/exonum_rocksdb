@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-use exonum_rocksdb::{checkpoint::Checkpoint, DB, Options};
+use exonum_rocksdb::{checkpoint::Checkpoint, Options, DB};
 use std::fs::remove_dir_all;
 
 #[test]

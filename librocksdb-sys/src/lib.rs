@@ -1304,6 +1304,24 @@ extern "C" {
 
     pub fn rocksdb_free(ptr: *mut c_void);
 
+    // Checkpoint
+
+    pub fn rocksdb_checkpoint_object_create(
+        db: *mut rocksdb_t,
+        errptr: *mut *mut c_char,
+    ) -> *mut rocksdb_checkpoint_t;
+
+    pub fn rocksdb_checkpoint_create(
+        checkpoint: *const rocksdb_checkpoint_t,
+        checkpoint_dir: *const c_char,
+        log_size_for_flush: uint64_t,
+        errptr: *mut *mut c_char,
+    );
+
+    pub fn rocksdb_checkpoint_object_destroy(
+        checkpoint: *const rocksdb_checkpoint_t,
+    );
+
     // Transactions DB
 
     pub fn rocksdb_transactiondb_open(
