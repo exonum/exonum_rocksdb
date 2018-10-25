@@ -38,6 +38,25 @@
 //! ```
 //!
 
+#![cfg_attr(feature = "cargo-clippy", deny(clippy_pedantic))]
+#![cfg_attr(
+    feature = "cargo-clippy",
+    allow(
+        // Next `cast_*` lints don't give alternatives.
+        cast_possible_wrap, cast_possible_truncation, cast_sign_loss,
+        // `filter(..).map(..)` often looks more shorter and readable.
+        filter_map,
+        // Next lints produce too much noise/false positives.
+        stutter, similar_names,
+        // Variant name ends with the enum name. Similar behavior to similar_names.
+        pub_enum_variant_names,
+        // Next lints allowed due to false positive.
+        doc_markdown,
+        // Can be enabled when rust-lang-nursery/rust-clippy#2894 is fixed.
+        use_self,
+    )
+)]
+
 extern crate exonum_librocksdb_sys as ffi;
 extern crate libc;
 extern crate tempdir;
