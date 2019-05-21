@@ -2,7 +2,7 @@ extern crate cc;
 extern crate pkg_config;
 
 use pkg_config::probe_library;
-use std::env::var;
+use std::env::{var, VarError::NotPresent};
 use std::fs::{create_dir, remove_dir_all};
 use std::process::Command;
 
@@ -129,8 +129,6 @@ fn build_snappy() {
 
 /// Returns `true` if `library` was found, or `false` if it should be compiled.
 fn try_to_find_lib(library: &str) -> bool {
-    use std::env;
-
     let lib_name = match library {
         "librocksdb" => "ROCKSDB",
         "libsnappy" => "SNAPPY",
@@ -148,9 +146,18 @@ fn try_to_find_lib(library: &str) -> bool {
 
     if let Ok(lib_dir) = env::var(format!("{}_LIB_DIR", lib_name).as_str()) {
         println!("cargo:rustc-link-search=native={}", lib_dir);
-        let mode = match env::var_os(format!("{}_STATIC", lib_name).as_str()) {
-            Some(_) => "static",
-            None => "dylib",
+        let mode = match var(format!("{}_STATIC", lib_name).as_str()) {
+            Ok(_) => {
+                if cfg!(target_os = "macos") {
+                    println!("cargo:rustc-link-lib=static=lz4");
+                    println!("cargo:rustc-link-lib=dylib=c++");
+                    println!("cargo:rustc-link-lib=dylib=bz2");
+                    println!("cargo:rustc-link-lib=dylib=z");
+                }
+                "static"
+            }
+            Err(NotPresent) => "dylib",
+            Err(_) => panic!("Wrong value in env variable"),
         };
         println!(
             "cargo:rustc-link-lib={0}={1}",
