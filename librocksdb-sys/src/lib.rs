@@ -17,7 +17,12 @@
 //!
 //! This is simply a raw interface to the RocksDB C API. It is intended to underpin a higher-level library rather than for direct use.
 
-#![allow(dead_code, non_camel_case_types, non_upper_case_globals, non_snake_case)]
+#![allow(
+    dead_code,
+    non_camel_case_types,
+    non_upper_case_globals,
+    non_snake_case
+)]
 
 extern crate libc;
 extern crate tempdir;
@@ -926,6 +931,8 @@ extern "C" {
         v: uint32_t,
     );
 
+    pub fn rocksdb_options_set_allow_concurrent_memtable_write(opt: *mut rocksdb_options_t, v: c_uchar);
+
     pub fn rocksdb_options_set_memtable_huge_page_size(opt: *mut rocksdb_options_t, v: size_t);
 
     pub fn rocksdb_options_set_max_successive_merges(opt: *mut rocksdb_options_t, v: size_t);
@@ -1204,7 +1211,7 @@ extern "C" {
     // Universal Compaction options
 
     pub fn rocksdb_universal_compaction_options_create(
-) -> *mut rocksdb_universal_compaction_options_t;
+    ) -> *mut rocksdb_universal_compaction_options_t;
 
     pub fn rocksdb_universal_compaction_options_set_size_ratio(
         uco: *mut rocksdb_universal_compaction_options_t,

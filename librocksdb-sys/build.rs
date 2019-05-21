@@ -110,6 +110,7 @@ fn build_snappy() {
     build.include(".");
 
     build.define("NDEBUG", Some("1"));
+
     build.opt_level(3);
 
     if cfg!(target_env = "msvc") {
@@ -118,6 +119,9 @@ fn build_snappy() {
         build.flag("-std=c++11");
         build.flag("-fPIC");
     }
+
+    build.flag_if_supported("-Wno-unused-parameter");
+    build.flag_if_supported("-Wno-sign-compare");
 
     build.file("snappy/snappy.cc");
     build.file("snappy/snappy-sinksource.cc");
@@ -135,7 +139,7 @@ fn try_to_find_lib(library: &str) -> bool {
         _ => "UNKNOWN",
     };
 
-    let should_build = match env::var(format!("{}_BUILD", lib_name)).ok() {
+    let should_build = match var(format!("{}_BUILD", lib_name)).ok() {
         None => false,
         Some(ref x) if x == "0" => false,
         _ => true,
@@ -144,7 +148,7 @@ fn try_to_find_lib(library: &str) -> bool {
         return false;
     }
 
-    if let Ok(lib_dir) = env::var(format!("{}_LIB_DIR", lib_name).as_str()) {
+    if let Ok(lib_dir) = var(format!("{}_LIB_DIR", lib_name).as_str()) {
         println!("cargo:rustc-link-search=native={}", lib_dir);
         let mode = match var(format!("{}_STATIC", lib_name).as_str()) {
             Ok(_) => {
@@ -171,17 +175,20 @@ fn try_to_find_lib(library: &str) -> bool {
 }
 
 fn get_local_src_if(name: &str, repo: &str, sha: &str) {
-    let is_to_pull = Command::new("git").arg("rev-parse")
-                                        .arg("HEAD")
-                                        .current_dir(name)
-                                        .output()
-                                        .map(|output| {
-                                            let curren_head = std::str::from_utf8(&output.stdout).expect("UTF-8 output").trim();
-                                            //Assume that if sha is different, we were not able
-                                            //to finish clone/checkout
-                                            curren_head != sha
-                                        })
-                                        .unwrap_or(true);
+    let is_to_pull = Command::new("git")
+        .arg("rev-parse")
+        .arg("HEAD")
+        .current_dir(name)
+        .output()
+        .map(|output| {
+            let curren_head = std::str::from_utf8(&output.stdout)
+                .expect("UTF-8 output")
+                .trim();
+            //Assume that if sha is different, we were not able
+            //to finish clone/checkout
+            curren_head != sha
+        })
+        .unwrap_or(true);
 
     if !is_to_pull {
         return;
@@ -190,36 +197,49 @@ fn get_local_src_if(name: &str, repo: &str, sha: &str) {
     let _ = remove_dir_all(name);
     create_dir(name).expect("To create dir");
 
-    Command::new("git").arg("clone")
-                       .arg(repo)
-                       .arg(".")
-                       .current_dir(name)
-                       .status()
-                       .map(|status| match status.success() {
-                           true => (),
-                           false => panic!("Git: Unable to clone repo")
-                       })
-                       .expect("Failed to run clone command");
+    Command::new("git")
+        .arg("clone")
+        .arg(repo)
+        .arg(".")
+        .current_dir(name)
+        .status()
+        .map(|status| match status.success() {
+            true => (),
+            false => panic!("Git: Unable to clone repo"),
+        })
+        .expect("Failed to run clone command");
 
-    Command::new("git").arg("checkout")
-                       .arg(sha)
-                       .current_dir(name)
-                       .output()
-                       .map(|output| match output.status.success() {
-                           true => (),
-                           false => panic!("Git: Unable to checkout repo: {}", String::from_utf8_lossy(&output.stderr)),
-                       })
-                       .expect("Failed to run checkout command");
+    Command::new("git")
+        .arg("checkout")
+        .arg(sha)
+        .current_dir(name)
+        .output()
+        .map(|output| match output.status.success() {
+            true => (),
+            false => panic!(
+                "Git: Unable to checkout repo: {}",
+                String::from_utf8_lossy(&output.stderr)
+            ),
+        })
+        .expect("Failed to run checkout command");
 }
 
 fn main() {
     if !try_to_find_lib("libsnappy") {
-        get_local_src_if("snappy", "https://github.com/google/snappy.git", "513df5fb5a2d51146f409141f9eb8736935cc486");
+        get_local_src_if(
+            "snappy",
+            "https://github.com/google/snappy.git",
+            "b02bfa754ebf27921d8da3bd2517eab445b84ff9",
+        );
         build_snappy();
     }
 
     if !try_to_find_lib("librocksdb") {
-        get_local_src_if("rocksdb", "https://github.com/facebook/rocksdb.git", "d310e0f33977d4e297bf25a98eef79d1a02513d7");
+        get_local_src_if(
+            "rocksdb",
+            "https://github.com/facebook/rocksdb.git",
+            "641fae60f63619ed5d0c9d9e4c4ea5a0ffa3e253",
+        );
         build_rocksdb();
     }
 }

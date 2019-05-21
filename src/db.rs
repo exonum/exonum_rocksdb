@@ -371,42 +371,42 @@ impl DBRawIterator {
     }
 
     /*
-    SeekForPrev was added in RocksDB 4.13 but not implemented in the C API until RocksDB 5.0
+        SeekForPrev was added in RocksDB 4.13 but not implemented in the C API until RocksDB 5.0
 
-    /// Seeks to the specified key, or the first key that lexicographically precedes it.
-    ///
-    /// Like ``.seek()`` this method will attempt to seek to the specified key.
-    /// The difference with ``.seek()`` is that if the specified key do not exist, this method will
-    /// seek to key that lexicographically precedes it instead.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// extern crate exonum_rocksdb;
-    /// extern crate tempdir;
-    ///
-    /// use exonum_rocksdb::DB;
-    /// use tempdir::TempDir;
-    ///
-    /// # fn main() {
-    /// let temp_dir = TempDir::new("storage8").unwrap();
-    /// let mut db = DB::open_default(temp_dir.path()).unwrap();
-    /// let mut iter = db.raw_iterator();
-    ///
-    /// // Read the last key that starts with 'a'
-    ///
-    /// iter.seek_for_prev(b"b");
-    ///
-    /// if iter.valid() {
-    ///    println!("{:?} {:?}", iter.key(), iter.value());
-    /// } else {
-    ///    // There are no keys in the database
-    /// }
-    pub fn seek_for_prev(&mut self, key: &[u8]) {
-        unsafe { ffi::rocksdb_iter_seek_for_prev(
-                    self.inner, key.as_ptr() as *const c_char, key.len() as size_t); }
-    }
-*/
+        /// Seeks to the specified key, or the first key that lexicographically precedes it.
+        ///
+        /// Like ``.seek()`` this method will attempt to seek to the specified key.
+        /// The difference with ``.seek()`` is that if the specified key do not exist, this method will
+        /// seek to key that lexicographically precedes it instead.
+        ///
+        /// # Examples
+        ///
+        /// ```rust
+        /// extern crate exonum_rocksdb;
+        /// extern crate tempdir;
+        ///
+        /// use exonum_rocksdb::DB;
+        /// use tempdir::TempDir;
+        ///
+        /// # fn main() {
+        /// let temp_dir = TempDir::new("storage8").unwrap();
+        /// let mut db = DB::open_default(temp_dir.path()).unwrap();
+        /// let mut iter = db.raw_iterator();
+        ///
+        /// // Read the last key that starts with 'a'
+        ///
+        /// iter.seek_for_prev(b"b");
+        ///
+        /// if iter.valid() {
+        ///    println!("{:?} {:?}", iter.key(), iter.value());
+        /// } else {
+        ///    // There are no keys in the database
+        /// }
+        pub fn seek_for_prev(&mut self, key: &[u8]) {
+            unsafe { ffi::rocksdb_iter_seek_for_prev(
+                        self.inner, key.as_ptr() as *const c_char, key.len() as size_t); }
+        }
+    */
 
     /// Seeks to the next key.
     ///
@@ -763,7 +763,7 @@ impl DB {
         self.path.as_path()
     }
 
-    #[cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value))]
+    #[cfg_attr(feature = "cargo-clippy", clippy::needless_pass_by_value)]
     pub fn write_opt(&self, batch: WriteBatch, writeopts: &WriteOptions) -> Result<(), Error> {
         unsafe {
             ffi_try!(ffi::rocksdb_write(self.inner, writeopts.inner, batch.inner));
@@ -1342,11 +1342,9 @@ fn errors_do_stuff() {
         Err(s) => {
             let message = s.to_string();
             assert!(message.find("IO error:").is_some());
-            assert!(
-                message
-                    .find(format!("{}/LOCK:", path.to_str().unwrap()).as_str())
-                    .is_some()
-            );
+            assert!(message
+                .find(format!("{}/LOCK:", path.to_str().unwrap()).as_str())
+                .is_some());
         }
         Ok(_) => panic!("should fail"),
     }

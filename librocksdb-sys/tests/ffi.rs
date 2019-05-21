@@ -15,12 +15,18 @@
 
 // This code is based on <https://github.com/facebook/rocksdb/blob/master/db/c_test.c>, revision a10e8a056d569acf6a52045124e6414ad33bdfcd.
 
-#![allow(non_snake_case, non_upper_case_globals, unused_mut, unused_unsafe, unused_variables)]
+#![allow(
+    non_snake_case,
+    non_upper_case_globals,
+    unused_mut,
+    unused_unsafe,
+    unused_variables
+)]
 
 #[macro_use]
 extern crate const_cstr;
 extern crate libc;
-extern crate librocksdb_sys as ffi;
+extern crate exonum_librocksdb_sys as ffi;
 
 use ffi::*;
 use libc::*;
@@ -36,10 +42,6 @@ use std::str;
 
 macro_rules! err_println {
     ($($arg:tt)*) => (writeln!(&mut ::std::io::stderr(), $($arg)*).expect("failed printing to stderr"));
-}
-
-macro_rules! cstr {
-    ($($arg:tt)*) => (const_cstr!($($arg)*));
 }
 
 macro_rules! cstrp {
@@ -1118,6 +1120,7 @@ fn ffi() {
             );
             rocksdb_options_set_hash_skip_list_rep(options, 5000, 4, 4);
             rocksdb_options_set_plain_table_factory(options, 4, 10, 0.75, 16);
+            rocksdb_options_set_allow_concurrent_memtable_write(options, 0);
 
             db = rocksdb_open(options, dbname, &mut err);
             CheckNoError!(err);
