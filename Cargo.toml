@@ -1,7 +1,7 @@
 [package]
 name = "exonum_rocksdb"
 description = "Rust wrapper for Facebook's RocksDB embeddable database"
-version = "0.7.5"
+version = "0.7.6"
 authors = ["Tyler Neely <t@jujit.su>", "David Greenberg <dsg123456789@gmail.com>", "The Exonum Team <exonum@bitfury.com>"]
 license = "Apache-2.0"
 keywords = ["database", "embedded", "LSM-tree", "persistence"]

@@ -18,7 +18,7 @@ use comparator::{self, ComparatorCallback, CompareFn};
 use ffi;
 use {BlockBasedOptions, DBCompactionStyle, DBCompressionType, Options, WriteOptions};
 
-use libc::{c_int, c_uchar, c_uint, c_void, size_t, uint64_t};
+use libc::{c_int, c_uchar, c_uint, c_void, size_t};
 use merge_operator::{
     self, full_merge_callback, partial_merge_callback, MergeFn, MergeOperatorCallback,
 };
@@ -123,7 +123,7 @@ impl Options {
         unsafe {
             ffi::rocksdb_options_optimize_level_style_compaction(
                 self.inner,
-                memtable_memory_budget as uint64_t,
+                memtable_memory_budget as u64,
             );
         }
     }

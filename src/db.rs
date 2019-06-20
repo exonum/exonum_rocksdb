@@ -763,7 +763,6 @@ impl DB {
         self.path.as_path()
     }
 
-    #[cfg_attr(feature = "cargo-clippy", clippy::needless_pass_by_value)]
     pub fn write_opt(&self, batch: WriteBatch, writeopts: &WriteOptions) -> Result<(), Error> {
         unsafe {
             ffi_try!(ffi::rocksdb_write(self.inner, writeopts.inner, batch.inner));
